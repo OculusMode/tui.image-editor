@@ -10,12 +10,12 @@ import action from './action';
 import commandFactory from './factory/command';
 import Graphics from './graphics';
 import consts from './consts';
-import {sendHostName} from './util';
+import { sendHostName } from './util';
 
 const events = consts.eventNames;
 const commands = consts.commandNames;
-const {keyCodes, rejectMessages} = consts;
-const {isUndefined, forEach, CustomEvents} = snippet;
+const { keyCodes, rejectMessages } = consts;
+const { isUndefined, forEach, CustomEvents } = snippet;
 
 /**
  * Image editor
@@ -89,11 +89,11 @@ class ImageEditor {
          */
         this._graphics = new Graphics(
             this.ui ? this.ui.getEditorArea() : wrapper, {
-                cssMaxWidth: options.cssMaxWidth,
-                cssMaxHeight: options.cssMaxHeight,
-                useItext: !!this.ui,
-                useDragAddIcon: !!this.ui
-            }
+            cssMaxWidth: options.cssMaxWidth,
+            cssMaxHeight: options.cssMaxHeight,
+            useItext: !!this.ui,
+            useDragAddIcon: !!this.ui
+        }
         );
 
         /**
@@ -198,7 +198,7 @@ class ImageEditor {
      *   @param {boolean} applyGroupSelectionStyle - whether apply with group selection style or not
      * @private
      */
-    _setSelectionStyle(selectionStyle, {applyCropSelectionStyle, applyGroupSelectionStyle}) {
+    _setSelectionStyle(selectionStyle, { applyCropSelectionStyle, applyGroupSelectionStyle }) {
         if (selectionStyle) {
             this._graphics.setSelectionStyle(selectionStyle);
         }
@@ -302,7 +302,7 @@ class ImageEditor {
 
         if ((e.ctrlKey || e.metaKey) && e.keyCode === keyCodes.Y) {
             // There is no error message on shortcut when it's empty
-            this.redo()['catch'](() => { });
+            this.redo()['catch'](() => {});
         }
 
         if ((e.keyCode === keyCodes.BACKSPACE || e.keyCode === keyCodes.DEL)) {
