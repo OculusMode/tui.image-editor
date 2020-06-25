@@ -1,34 +1,52 @@
-export default () => (`
+/**
+ * @param {Locale} locale - Translate text
+ * @returns {string}
+ */
+export default ({locale}) => (`
     <ul class="tui-image-editor-submenu-item">
         <li class="tui-image-editor-submenu-align">
             <div class="tui-image-editor-checkbox-wrap fixed-width">
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-grayscale">
-                    <label for="tie-grayscale">Grayscale</label>
+                    <label>
+                        <input type="checkbox" class="tie-grayscale">
+                        <span>${locale.localize('Grayscale')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-invert">
-                    <label for="tie-invert">Invert</label>
+                    <label>
+                        <input type="checkbox" class="tie-invert">
+                        <span>${locale.localize('Invert')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-sepia">
-                    <label for="tie-sepia">Sepia</label>
+                    <label>
+                        <input type="checkbox" class="tie-sepia">
+                        <span>${locale.localize('Sepia')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-sepia2">
-                    <label for="tie-sepia2">Sepia2</label>
+                    <label>
+                        <input type="checkbox" class="tie-vintage">
+                        <span>${locale.localize('Sepia2')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-blur">
-                    <label for="tie-blur">Blur</label>
+                    <label>
+                        <input type="checkbox" class="tie-blur">
+                        <span>${locale.localize('Blur')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-sharpen">
-                    <label for="tie-sharpen">Sharpen</label>
+                    <label>
+                        <input type="checkbox" class="tie-sharpen">
+                        <span>${locale.localize('Sharpen')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-emboss">
-                    <label for="tie-emboss">Emboss</label>
+                    <label>
+                        <input type="checkbox" class="tie-emboss">
+                        <span>${locale.localize('Emboss')}</span>
+                    </label>
                 </div>
             </div>
         </li>
@@ -36,32 +54,40 @@ export default () => (`
             <div></div>
         </li>
         <li class="tui-image-editor-submenu-align">
-            <div>
+            <div class="tui-image-editor-checkbox-group tui-image-editor-disabled" style="margin-bottom: 7px;">
                 <div class="tui-image-editor-checkbox-wrap">
                     <div class="tui-image-editor-checkbox">
-                        <input type="checkbox" id="tie-remove-white">
-                        <label for="tie-remove-white">Remove White</label>
+                        <label>
+                            <input type="checkbox" class="tie-remove-white">
+                            <span>${locale.localize('Remove White')}</span>
+                        </label>
                     </div>
                 </div>
                 <div class="tui-image-editor-newline tui-image-editor-range-wrap short">
-                    <label>Threshold</label>
-                    <div id="tie-removewhite-threshold-range"></div>
-                </div>
-                <div class="tui-image-editor-newline tui-image-editor-range-wrap short">
-                    <label>Distance</label>
-                    <div id="tie-removewhite-distance-range"></div>
+                    <label>${locale.localize('Distance')}</label>
+                    <div class="tie-removewhite-distance-range"></div>
                 </div>
             </div>
-            <div>
-                <div class="tui-image-editor-newline tui-image-editor-checkbox-wrap">
-                    <div class="tui-image-editor-checkbox">
-                        <input type="checkbox" id="tie-gradient-transparency">
-                        <label for="tie-gradient-transparency">Grayscale</label>
-                    </div>
+            <div class="tui-image-editor-checkbox-group tui-image-editor-disabled">
+                <div class="tui-image-editor-checkbox">
+                    <label>
+                        <input type="checkbox" class="tie-brightness">
+                        <span>${locale.localize('Brightness')}</span>
+                    </label>
                 </div>
-                <div class="tui-image-editor-newline tui-image-editor-range-wrap short">
-                    <label>Value</label>
-                    <div id="tie-gradient-transparency-range"></div>
+                <div class="tui-image-editor-range-wrap short">
+                    <div class="tie-brightness-range"></div>
+                </div>
+            </div>
+            <div class="tui-image-editor-checkbox-group tui-image-editor-disabled">
+                <div class="tui-image-editor-checkbox">
+                    <label>
+                        <input type="checkbox" class="tie-noise">
+                        <span>${locale.localize('Noise')}</span>
+                    </label>
+                </div>
+                <div class="tui-image-editor-range-wrap short">
+                    <div class="tie-noise-range"></div>
                 </div>
             </div>
         </li>
@@ -69,44 +95,29 @@ export default () => (`
             <div></div>
         </li>
         <li class="tui-image-editor-submenu-align">
-            <div>
+            <div class="tui-image-editor-checkbox-group tui-image-editor-disabled">
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-brightness">
-                    <label for="tie-brightness">Brightness</label>
+                    <label>
+                        <input type="checkbox" class="tie-pixelate">
+                        <span>${locale.localize('Pixelate')}</span>
+                    </label>
                 </div>
                 <div class="tui-image-editor-range-wrap short">
-                    <div id="tie-brightness-range"></div>
+                    <div class="tie-pixelate-range"></div>
                 </div>
             </div>
-            <div>
-                <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-noise">
-                    <label for="tie-noise">Noise</label>
-                </div>
-                <div class="tui-image-editor-range-wrap short">
-                    <div id="tie-noise-range"></div>
-                </div>
-            </div>
-
-            <div>
-                <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-pixelate">
-                    <label for="tie-pixelate">Pixelate</label>
-                </div>
-                <div class="tui-image-editor-range-wrap short">
-                    <div id="tie-pixelate-range"></div>
-                </div>
-            </div>
-            <div>
+            <div class="tui-image-editor-checkbox-group tui-image-editor-disabled">
                 <div class="tui-image-editor-newline tui-image-editor-checkbox-wrap">
                     <div class="tui-image-editor-checkbox">
-                        <input type="checkbox" id="tie-color-filter">
-                        <label for="tie-color-filter">Color Filter</label>
+                        <label>
+                            <input type="checkbox" class="tie-color-filter">
+                            <span>${locale.localize('Color Filter')}</span>
+                        </label>
                     </div>
                 </div>
                 <div class="tui-image-editor-newline tui-image-editor-range-wrap short">
-                    <label>Threshold</label>
-                    <div id="tie-colorfilter-threshole-range"></div>
+                    <label>${locale.localize('Threshold')}</label>
+                    <div class="tie-colorfilter-threshole-range"></div>
                 </div>
             </div>
         </li>
@@ -115,24 +126,30 @@ export default () => (`
         </li>
         <li>
             <div class="filter-color-item">
-                <div id="tie-filter-tint-color" title="Tint"></div>
+                <div class="tie-filter-tint-color" title="${locale.localize('Tint')}"></div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-tint">
-                    <label for="tie-tint"></label>
+                    <label>
+                        <input type="checkbox" class="tie-tint">
+                        <span></span>
+                    </label>
                 </div>
             </div>
             <div class="filter-color-item">
-                <div id="tie-filter-multiply-color" title="Multiply"></div>
+                <div class="tie-filter-multiply-color" title="${locale.localize('Multiply')}"></div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-multiply">
-                    <label for="tie-multiply"></label>
+                    <label>
+                        <input type="checkbox" class="tie-multiply">
+                        <span></span>
+                    </label>
                 </div>
             </div>
             <div class="filter-color-item">
-                <div id="tie-filter-blend-color" title="Blend"></div>
+                <div class="tie-filter-blend-color" title="${locale.localize('Blend')}"></div>
                 <div class="tui-image-editor-checkbox">
-                    <input type="checkbox" id="tie-blend">
-                    <label for="tie-blend"></label>
+                    <label>
+                        <input type="checkbox" class="tie-blend">
+                        <span></span>
+                    </label>
                 </div>
             </div>
         </li>

@@ -1,12 +1,9 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview LineDrawingMode class
  */
 import DrawingMode from '../interface/drawingMode';
-import consts from '../consts';
-
-const {drawingModes} = consts;
-const components = consts.componentNames;
+import {drawingModes, componentNames as components} from '../consts';
 
 /**
  * LineDrawingMode class
@@ -40,4 +37,4 @@ class LineDrawingMode extends DrawingMode {
     }
 }
 
-module.exports = LineDrawingMode;
+export default LineDrawingMode;

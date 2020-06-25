@@ -1,7 +1,7 @@
 {
   "name": "tui-image-editor",
   "authors": [
-    "NHN Ent. FE Dev Lab <dl_javascript@nhnent.com>"
+    "NHN FE Dev Lab <dl_javascript@nhn.com>"
   ],
   "license": "MIT",
   "main": [
@@ -28,8 +28,8 @@
     "webpack.*.js"
   ],
   "dependencies": {
-    "fabric": "~1.6.4",
-    "tui-code-snippet": "^1.3.0",
+    "fabric": "3.6.0",
+    "tui-code-snippet": "^1.5.0",
     "tui-color-picker": "^2.2.0"
   },
   "devDependencies": {
@@ -37,7 +37,7 @@
     "filesaver": "*"
   },
   "resolutions": {
-    "tui-code-snippet": "^1.3.0",
+    "tui-code-snippet": "^1.5.0",
     "tui-color-picker": "^2.2.0"
   }
 }

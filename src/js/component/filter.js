@@ -1,19 +1,18 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Add filter module
  */
 import {isUndefined, extend, forEach, filter} from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
-import fabric from 'fabric/dist/fabric.require';
+import {Promise} from '../util';
+import fabric from 'fabric';
 import Component from '../interface/component';
 import Mask from '../extension/mask';
-import consts from '../consts';
+import {rejectMessages, componentNames} from '../consts';
 import Blur from '../extension/blur';
 import Sharpen from '../extension/sharpen';
 import Emboss from '../extension/emboss';
 import ColorFilter from '../extension/colorFilter';
 
-const {rejectMessages} = consts;
 const {filters} = fabric.Image;
 filters.Mask = Mask;
 filters.Blur = Blur;
@@ -30,7 +29,7 @@ filters.ColorFilter = ColorFilter;
  */
 class Filter extends Component {
     constructor(graphics) {
-        super(consts.componentNames.FILTER, graphics);
+        super(componentNames.FILTER, graphics);
     }
 
     /**
@@ -58,7 +57,8 @@ class Filter extends Component {
                 canvas.renderAll();
                 resolve({
                     type,
-                    action: 'add'
+                    action: 'add',
+                    options
                 });
             });
         });
@@ -73,6 +73,7 @@ class Filter extends Component {
         return new Promise((resolve, reject) => {
             const sourceImg = this._getSourceImage();
             const canvas = this.getCanvas();
+            const options = this.getOptions(type);
 
             if (!sourceImg.filters.length) {
                 reject(rejectMessages.unsupportedOperation);
@@ -84,7 +85,8 @@ class Filter extends Component {
                 canvas.renderAll();
                 resolve({
                     type,
-                    action: 'remove'
+                    action: 'remove',
+                    options
                 });
             });
         });
@@ -140,7 +142,11 @@ class Filter extends Component {
      * @private
      */
     _apply(sourceImg, callback) {
-        sourceImg.applyFilters(callback);
+        sourceImg.filters.push();
+        const result = sourceImg.applyFilters();
+        if (result) {
+            callback();
+        }
     }
 
     /**
@@ -224,4 +230,4 @@ class Filter extends Component {
     }
 }
 
-module.exports = Filter;
+export default Filter;

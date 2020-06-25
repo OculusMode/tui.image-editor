@@ -1,54 +1,45 @@
-export default ({iconStyle: {normal, active}}) => (`
+/**
+ * @param {Object} submenuInfo - submenu info for make template
+ *   @param {Locale} locale - Translate text
+ *   @param {Function} makeSvgIcon - svg icon generator
+ * @returns {string}
+ */
+export default ({locale, makeSvgIcon}) => (`
     <ul class="tui-image-editor-submenu-item">
-        <li id="tie-shape-button">
+        <li class="tie-shape-button">
             <div class="tui-image-editor-button rect">
                 <div>
-                    <svg class="svg_ic-submenu">
-                        <use xlink:href="${normal.path}#${normal.name}-ic-shape-rectangle"
-                            class="normal"/>
-                        <use xlink:href="${active.path}#${active.name}-ic-shape-rectangle"
-                            class="active"/>
-                    </svg>
+                    ${makeSvgIcon(['normal', 'active'], 'shape-rectangle', true)}
                 </div>
-                <label> Rectangle </label>
+                <label> ${locale.localize('Rectangle')} </label>
             </div>
             <div class="tui-image-editor-button circle">
                 <div>
-                    <svg class="svg_ic-submenu">
-                        <use xlink:href="${normal.path}#${normal.name}-ic-shape-circle"
-                            class="normal"/>
-                        <use xlink:href="${active.path}#${active.name}-ic-shape-circle"
-                            class="active"/>
-                    </svg>
+                    ${makeSvgIcon(['normal', 'active'], 'shape-circle', true)}
                 </div>
-                <label> Circle </label>
+                <label> ${locale.localize('Circle')} </label>
             </div>
             <div class="tui-image-editor-button triangle">
                 <div>
-                    <svg class="svg_ic-submenu">
-                        <use xlink:href="${normal.path}#${normal.name}-ic-shape-triangle"
-                            class="normal"/>
-                        <use xlink:href="${active.path}#${active.name}-ic-shape-triangle"
-                            class="active"/>
-                    </svg>
+                    ${makeSvgIcon(['normal', 'active'], 'shape-triangle', true)}
                 </div>
-                <label> Triangle </label>
+                <label> ${locale.localize('Triangle')} </label>
             </div>
         </li>
         <li class="tui-image-editor-partition">
             <div></div>
         </li>
-        <li id="tie-shape-color-button">
-            <div id="tie-color-fill" title="fill"></div>
-            <div id="tie-color-stroke" title="stroke"></div>
+        <li class="tie-shape-color-button">
+            <div class="tie-color-fill" title="${locale.localize('Fill')}"></div>
+            <div class="tie-color-stroke" title="${locale.localize('Stroke')}"></div>
         </li>
         <li class="tui-image-editor-partition only-left-right">
             <div></div>
         </li>
         <li class="tui-image-editor-newline tui-image-editor-range-wrap">
-            <label class="range">Stroke</label>
-            <div id="tie-stroke-range"></div>
-            <input id="tie-stroke-range-value" class="tui-image-editor-range-value" value="0" />
+            <label class="range">${locale.localize('Stroke')}</label>
+            <div class="tie-stroke-range"></div>
+            <input class="tie-stroke-range-value tui-image-editor-range-value" value="0" />
         </li>
     </ul>
 `);

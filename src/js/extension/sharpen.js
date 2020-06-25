@@ -1,8 +1,8 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Sharpen extending fabric.Image.filters.Convolute
  */
-import fabric from 'fabric/dist/fabric.require';
+import fabric from 'fabric';
 
 /**
  * Sharpen object
@@ -32,4 +32,4 @@ const Sharpen = fabric.util.createClass(fabric.Image.filters.Convolute, /** @len
     }
 });
 
-module.exports = Sharpen;
+export default Sharpen;

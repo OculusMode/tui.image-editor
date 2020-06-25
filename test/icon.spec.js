@@ -1,8 +1,8 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Test cases of "src/js/component/icon.js"
  */
-import fabric from 'fabric/dist/fabric.require';
+import fabric from 'fabric';
 import $ from 'jquery';
 import Graphics from '../src/js/graphics';
 import Icon from '../src/js/component/icon';
@@ -41,9 +41,10 @@ describe('Icon', () => {
         icon.add('arrow');
 
         const activeObj = canvas.getActiveObject();
+        const halfStrokeWidth = activeObj.strokeWidth / 2;
 
-        expect(activeObj.left).toEqual(centerPos.x);
-        expect(activeObj.top).toEqual(centerPos.y);
+        expect(activeObj.left + halfStrokeWidth).toEqual(centerPos.x);
+        expect(activeObj.top + halfStrokeWidth).toEqual(centerPos.y);
     });
 
     it('add() should create the arrow icon when parameter value is "arrow".', () => {
@@ -64,6 +65,31 @@ describe('Icon', () => {
         icon.add('cancel');
 
         expect(icon._createIcon).toHaveBeenCalledWith(path);
+    });
+
+    it('`_addWithDragEvent()` should be executed when `useDragAddIcon` is true.', () => {
+        const defaultIconKey = 'icon-arrow';
+        icon._pathMap[defaultIconKey] = true;
+
+        spyOn(icon, '_createIcon').and.returnValue(new fabric.Object({}));
+        spyOn(icon, '_addWithDragEvent');
+        spyOn(icon, 'useDragAddIcon').and.returnValue(true);
+
+        icon.add(defaultIconKey);
+
+        expect(icon._addWithDragEvent).toHaveBeenCalled();
+    });
+
+    it('`_addWithDragEvent()` should be not executed when target icon is not default icon.', () => {
+        const nonDefaultIconKey = 'non-default-icon';
+
+        spyOn(icon, '_createIcon').and.returnValue(new fabric.Object({}));
+        spyOn(icon, '_addWithDragEvent');
+        spyOn(icon, 'useDragAddIcon').and.returnValue(true);
+
+        icon.add(nonDefaultIconKey);
+
+        expect(icon._addWithDragEvent).not.toHaveBeenCalled();
     });
 
     it('setColor() should change color of next inserted icon.', () => {

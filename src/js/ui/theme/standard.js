@@ -1,6 +1,6 @@
 /**
  * @fileoverview The standard theme
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  */
 
 /**
@@ -25,16 +25,26 @@
  * @property {string} downloadButton.color - download button foreground color
  * @property {string} downloadButton.fontFamily - download button font type
  * @property {string} downloadButton.fontSize - download button font size
- * @property {string} menu.normalIcon.path - Menu default icon svg bundle file path
- * @property {string} menu.normalIcon.name - Menu default icon svg bundle name
+ * @property {string} menu.normalIcon.color - Menu normal color for default icon
+ * @property {string} menu.normalIcon.path - Menu normal icon svg bundle file path
+ * @property {string} menu.normalIcon.name - Menu normal icon svg bundle name
+ * @property {string} menu.activeIcon.color - Menu active color for default icon
  * @property {string} menu.activeIcon.path - Menu active icon svg bundle file path
  * @property {string} menu.activeIcon.name - Menu active icon svg bundle name
+ * @property {string} menu.disabled.color - Menu disabled color for default icon
+ * @property {string} menu.disabled.path - Menu disabled icon svg bundle file path
+ * @property {string} menu.disabled.name - Menu disabled icon svg bundle name
+ * @property {string} menu.hover.color - Menu default icon hover color
+ * @property {string} menu.hover.path - Menu hover icon svg bundle file path
+ * @property {string} menu.hover.name - Menu hover icon svg bundle name
  * @property {string} menu.iconSize.width - Menu icon Size Width
  * @property {string} menu.iconSize.height - Menu Icon Size Height
  * @property {string} submenu.backgroundColor - Sub-menu area background color
  * @property {string} submenu.partition.color - Submenu partition line color
+ * @property {string} submenu.normalIcon.color - Submenu normal color for default icon
  * @property {string} submenu.normalIcon.path - Submenu default icon svg bundle file path
  * @property {string} submenu.normalIcon.name - Submenu default icon svg bundle name
+ * @property {string} submenu.activeIcon.color - Submenu active color for default icon
  * @property {string} submenu.activeIcon.path - Submenu active icon svg bundle file path
  * @property {string} submenu.activeIcon.name - Submenu active icon svg bundle name
  * @property {string} submenu.iconSize.width - Submenu icon Size Width
@@ -86,25 +96,22 @@
     'downloadButton.fontFamily': 'NotoSans, sans-serif',
     'downloadButton.fontSize': '12px',
 
-    // main icons
-    'menu.normalIcon.path': '../dist/svg/icon-b.svg',
-    'menu.normalIcon.name': 'icon-b',
-    'menu.activeIcon.path': '../dist/svg/icon-a.svg',
-    'menu.activeIcon.name': 'icon-a',
+    // icons default
+    'menu.normalIcon.color': '#8a8a8a',
+    'menu.activeIcon.color': '#555555',
+    'menu.disabledIcon.color': '#434343',
+    'menu.hoverIcon.color': '#e9e9e9',
+    'submenu.normalIcon.color': '#8a8a8a',
+    'submenu.activeIcon.color': '#e9e9e9',
+
     'menu.iconSize.width': '24px',
     'menu.iconSize.height': '24px',
+    'submenu.iconSize.width': '32px',
+    'submenu.iconSize.height': '32px',
 
     // submenu primary color
     'submenu.backgroundColor': '#1e1e1e',
     'submenu.partition.color': '#858585',
-
-    // submenu icons
-    'submenu.normalIcon.path': '../dist/svg/icon-a.svg',
-    'submenu.normalIcon.name': 'icon-a',
-    'submenu.activeIcon.path': '../dist/svg/icon-c.svg',
-    'submenu.activeIcon.name': 'icon-c',
-    'submenu.iconSize.width': '32px',
-    'submenu.iconSize.height': '32px',
 
     // submenu labels
     'submenu.normalLabel.color': '#858585',
@@ -120,6 +127,11 @@
     'range.pointer.color': '#fff',
     'range.bar.color': '#666',
     'range.subbar.color': '#d1d1d1',
+
+    'range.disabledPointer.color': '#414141',
+    'range.disabledBar.color': '#282828',
+    'range.disabledSubbar.color': '#414141',
+
     'range.value.color': '#fff',
     'range.value.fontWeight': 'lighter',
     'range.value.fontSize': '11px',
@@ -150,50 +162,55 @@ export default {
     'loadButton.backgroundColor': '#fff',
     'loadButton.border': '1px solid #ddd',
     'loadButton.color': '#222',
-    'loadButton.fontFamily': 'NotoSans, sans-serif',
+    'loadButton.fontFamily': '\'Noto Sans\', sans-serif',
     'loadButton.fontSize': '12px',
 
     // download button
     'downloadButton.backgroundColor': '#fdba3b',
     'downloadButton.border': '1px solid #fdba3b',
     'downloadButton.color': '#fff',
-    'downloadButton.fontFamily': 'NotoSans, sans-serif',
+    'downloadButton.fontFamily': '\'Noto Sans\', sans-serif',
     'downloadButton.fontSize': '12px',
 
     // main icons
-    'menu.normalIcon.path': 'icon-b.svg',
-    'menu.normalIcon.name': 'icon-b',
-    'menu.activeIcon.path': 'icon-a.svg',
-    'menu.activeIcon.name': 'icon-a',
+    'menu.normalIcon.color': '#8a8a8a',
+    'menu.activeIcon.color': '#555555',
+    'menu.disabledIcon.color': '#434343',
+    'menu.hoverIcon.color': '#e9e9e9',
+
+    // submenu icons
+    'submenu.normalIcon.color': '#8a8a8a',
+    'submenu.activeIcon.color': '#e9e9e9',
+
     'menu.iconSize.width': '24px',
     'menu.iconSize.height': '24px',
 
-    // submenu primary color
-    'submenu.backgroundColor': 'transparent',
-    'submenu.partition.color': '#858585',
-
-    // submenu icons
-    'submenu.normalIcon.path': 'icon-a.svg',
-    'submenu.normalIcon.name': 'icon-a',
-    'submenu.activeIcon.path': 'icon-c.svg',
-    'submenu.activeIcon.name': 'icon-c',
     'submenu.iconSize.width': '32px',
     'submenu.iconSize.height': '32px',
 
+    // submenu primary color
+    'submenu.backgroundColor': '#1e1e1e',
+    'submenu.partition.color': '#3c3c3c',
+
     // submenu labels
-    'submenu.normalLabel.color': '#858585',
+    'submenu.normalLabel.color': '#8a8a8a',
     'submenu.normalLabel.fontWeight': 'lighter',
     'submenu.activeLabel.color': '#fff',
     'submenu.activeLabel.fontWeight': 'lighter',
 
     // checkbox style
-    'checkbox.border': '1px solid #ccc',
+    'checkbox.border': '0px',
     'checkbox.backgroundColor': '#fff',
 
-    // rango style
+    // range style
     'range.pointer.color': '#fff',
     'range.bar.color': '#666',
     'range.subbar.color': '#d1d1d1',
+
+    'range.disabledPointer.color': '#414141',
+    'range.disabledBar.color': '#282828',
+    'range.disabledSubbar.color': '#414141',
+
     'range.value.color': '#fff',
     'range.value.fontWeight': 'lighter',
     'range.value.fontSize': '11px',

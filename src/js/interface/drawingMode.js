@@ -1,5 +1,5 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview DrawingMode interface
  */
 import errorMessage from '../factory/errorMessage';
@@ -48,4 +48,4 @@ class DrawingMode {
     }
 }
 
-module.exports = DrawingMode;
+export default DrawingMode;

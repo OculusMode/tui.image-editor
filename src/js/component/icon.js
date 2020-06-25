@@ -1,15 +1,12 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Add icon module
  */
-import fabric from 'fabric/dist/fabric.require';
+import fabric from 'fabric';
 import snippet from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
+import {Promise} from '../util';
 import Component from '../interface/component';
-import consts from '../consts';
-
-const events = consts.eventNames;
-const {rejectMessages} = consts;
+import {eventNames as events, rejectMessages, componentNames, fObjectOptions, defaultIconPath} from '../consts';
 
 const pathMap = {
     arrow: 'M 0 90 H 105 V 120 L 160 60 L 105 0 V 30 H 0 Z',
@@ -26,7 +23,7 @@ const pathMap = {
  */
 class Icon extends Component {
     constructor(graphics) {
-        super(consts.componentNames.ICON, graphics);
+        super(componentNames.ICON, graphics);
 
         /**
          * Default icon color
@@ -60,45 +57,54 @@ class Icon extends Component {
         return new Promise((resolve, reject) => {
             const canvas = this.getCanvas();
             const path = this._pathMap[type];
-            const selectionStyle = consts.fObjectOptions.SELECTION_STYLE;
+            const selectionStyle = fObjectOptions.SELECTION_STYLE;
+            const registerdIcon = Object.keys(defaultIconPath).indexOf(type) >= 0;
+            const useDragAddIcon = this.useDragAddIcon && registerdIcon;
+            const icon = path ? this._createIcon(path) : null;
 
-            if (!path) {
+            if (!icon) {
                 reject(rejectMessages.invalidParameters);
             }
-
-            const icon = this._createIcon(path);
 
             icon.set(snippet.extend({
                 type: 'icon',
                 fill: this._oColor
             }, selectionStyle, options, this.graphics.controlStyle));
 
-            if (this.useDragAddIcon) {
-                canvas.add(icon).setActiveObject(icon);
-                canvas.on({
-                    'mouse:move': fEvent => {
-                        canvas.selection = false;
+            canvas.add(icon).setActiveObject(icon);
 
-                        this.fire(events.ICON_CREATE_RESIZE, {
-                            moveOriginPointer: canvas.getPointer(fEvent.e)
-                        });
-                    },
-                    'mouse:up': fEvent => {
-                        this.fire(events.ICON_CREATE_END, {
-                            moveOriginPointer: canvas.getPointer(fEvent.e)
-                        });
-
-                        canvas.defaultCursor = 'default';
-                        canvas.off('mouse:up');
-                        canvas.off('mouse:move');
-                        canvas.selection = true;
-                    }
-                });
-            } else {
-                canvas.add(icon).setActiveObject(icon);
+            if (useDragAddIcon) {
+                this._addWithDragEvent(canvas);
             }
 
             resolve(this.graphics.createObjectProperties(icon));
+        });
+    }
+
+    /**
+     * Added icon drag event
+     * @param {fabric.Canvas} canvas - Canvas instance
+     * @private
+     */
+    _addWithDragEvent(canvas) {
+        canvas.on({
+            'mouse:move': fEvent => {
+                canvas.selection = false;
+
+                this.fire(events.ICON_CREATE_RESIZE, {
+                    moveOriginPointer: canvas.getPointer(fEvent.e)
+                });
+            },
+            'mouse:up': fEvent => {
+                this.fire(events.ICON_CREATE_END, {
+                    moveOriginPointer: canvas.getPointer(fEvent.e)
+                });
+
+                canvas.defaultCursor = 'default';
+                canvas.off('mouse:up');
+                canvas.off('mouse:move');
+                canvas.selection = true;
+            }
         });
     }
 
@@ -121,7 +127,7 @@ class Icon extends Component {
         this._oColor = color;
 
         if (obj && obj.get('type') === 'icon') {
-            obj.setFill(this._oColor);
+            obj.set({fill: this._oColor});
             this.getCanvas().renderAll();
         }
     }
@@ -145,4 +151,4 @@ class Icon extends Component {
     }
 }
 
-module.exports = Icon;
+export default Icon;

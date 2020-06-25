@@ -1,5 +1,4 @@
 import snippet from 'tui-code-snippet';
-import {toInteger} from '../../util';
 import tuiColorPicker from 'tui-color-picker';
 const PICKER_COLOR = [
     '#000000',
@@ -26,22 +25,37 @@ const PICKER_COLOR = [
  * @ignore
  */
 class Colorpicker {
-    constructor(colorpickerElement, defaultColor = '#7e7e7e', toggleDirection = 'up') {
-        const title = colorpickerElement.getAttribute('title');
+    constructor(colorpickerElement, defaultColor = '#7e7e7e', toggleDirection = 'up', usageStatistics) {
+        this.colorpickerElement = colorpickerElement;
+        this.usageStatistics = usageStatistics;
 
         this._show = false;
 
+        this._colorpickerElement = colorpickerElement;
         this._toggleDirection = toggleDirection;
-        this._makePickerButtonElement(colorpickerElement, defaultColor);
-        this._makePickerLayerElement(colorpickerElement, title);
+        this._makePickerButtonElement(defaultColor);
+        this._makePickerLayerElement(colorpickerElement, colorpickerElement.getAttribute('title'));
         this._color = defaultColor;
         this.picker = tuiColorPicker.create({
             container: this.pickerElement,
             preset: PICKER_COLOR,
-            color: defaultColor
+            color: defaultColor,
+            usageStatistics: this.usageStatistics
         });
 
-        this._addEvent(colorpickerElement);
+        this._addEvent();
+    }
+
+    /**
+     * Destroys the instance.
+     */
+    destroy() {
+        this._removeEvent();
+        this.picker.destroy();
+        this.colorpickerElement.innerHTML = '';
+        snippet.forEach(this, (value, key) => {
+            this[key] = null;
+        });
     }
 
     /**
@@ -78,12 +92,11 @@ class Colorpicker {
 
     /**
      * Make picker button element
-     * @param {HTMLElement} colorpickerElement color picker element
      * @param {string} defaultColor color value
      * @private
      */
-    _makePickerButtonElement(colorpickerElement, defaultColor) {
-        colorpickerElement.classList.add('tui-image-editor-button');
+    _makePickerButtonElement(defaultColor) {
+        this.colorpickerElement.classList.add('tui-image-editor-button');
 
         this.colorElement = document.createElement('div');
         this.colorElement.className = 'color-picker-value';
@@ -119,30 +132,93 @@ class Colorpicker {
         colorpickerElement.appendChild(this.pickerControl);
         colorpickerElement.appendChild(this.colorElement);
         colorpickerElement.appendChild(label);
-
-        this._setPickerControlPosition();
     }
 
     /**
      * Add event
-     * @param {HTMLElement} colorpickerElement color picker element
      * @private
      */
-    _addEvent(colorpickerElement) {
+    _addEvent() {
         this.picker.on('selectColor', value => {
             this._changeColorElement(value.color);
             this._color = value.color;
             this.fire('change', value.color);
         });
-        colorpickerElement.addEventListener('click', event => {
+
+        this.eventHandler = {
+            pickerToggle: this._pickerToggleEventHandler.bind(this),
+            pickerHide: () => this.hide()
+        };
+
+        this.colorpickerElement.addEventListener('click', this.eventHandler.pickerToggle);
+        document.body.addEventListener('click', this.eventHandler.pickerHide);
+    }
+
+    /**
+     * Remove event
+     * @private
+     */
+    _removeEvent() {
+        this.colorpickerElement.removeEventListener('click', this.eventHandler.pickerToggle);
+        document.body.removeEventListener('click', this.eventHandler.pickerHide);
+        this.picker.off();
+    }
+
+    /**
+     * Picker toggle event handler
+     * @param {object} event - change event
+     * @private
+     */
+    _pickerToggleEventHandler(event) {
+        const {target} = event;
+        const isInPickerControl = target && this._isElementInColorPickerControl(target);
+
+        if (!isInPickerControl || (isInPickerControl && this._isPaletteButton(target))) {
             this._show = !this._show;
             this.pickerControl.style.display = this._show ? 'block' : 'none';
-            event.stopPropagation();
-        });
-        document.body.addEventListener('click', () => {
-            this._show = false;
-            this.pickerControl.style.display = 'none';
-        });
+            this._setPickerControlPosition();
+            this.fire('changeShow', this);
+        }
+        event.stopPropagation();
+    }
+
+    /**
+     * Check hex input or not
+     * @param {Element} target - Event target element
+     * @returns {boolean}
+     * @private
+     */
+    _isPaletteButton(target) {
+        return target.className === 'tui-colorpicker-palette-button';
+    }
+
+    /**
+     * Check given element is in pickerControl element
+     * @param {Element} element - element to check
+     * @returns {boolean}
+     * @private
+     */
+    _isElementInColorPickerControl(element) {
+        let parentNode = element;
+
+        while (parentNode !== document.body) {
+            if (!parentNode) {
+                break;
+            }
+
+            if (parentNode === this.pickerControl) {
+                return true;
+            }
+
+            parentNode = parentNode.parentNode;
+        }
+
+        return false;
+    }
+
+    hide() {
+        this._show = false;
+        this.pickerControl.style.display = 'none';
     }
 
     /**
@@ -151,8 +227,9 @@ class Colorpicker {
      */
     _setPickerControlPosition() {
         const controlStyle = this.pickerControl.style;
-        const left = (toInteger(window.getComputedStyle(this.pickerControl, null).width) / 2) - 20;
-        let top = (toInteger(window.getComputedStyle(this.pickerControl, null).height) + 12) * -1;
+        const halfPickerWidth = (this._colorpickerElement.clientWidth / 2) + 2;
+        const left = (this.pickerControl.offsetWidth / 2) - halfPickerWidth;
+        let top = (this.pickerControl.offsetHeight + 10) * -1;
 
         if (this._toggleDirection === 'down') {
             top = 30;

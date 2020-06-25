@@ -1,9 +1,9 @@
 /**
  * mobile.js
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview
  */
-/* eslint-disable vars-on-top */
+/* eslint-disable vars-on-top,no-var,strict,prefer-template,prefer-arrow-callback,prefer-destructuring,object-shorthand,require-jsdoc,complexity */
 'use strict';
 
 var MAX_RESOLUTION = 3264 * 2448; // 8MP (Mega Pixel)
@@ -66,22 +66,22 @@ var $inputStrokeWidthRange = $('#input-stroke-range');
 var $inputCheckTransparent = $('#input-check-transparent');
 
 // Colorpicker
-var iconColorpicker = tui.component.colorpicker.create({
+var iconColorpicker = tui.colorPicker.create({
     container: $('#tui-icon-color-picker')[0],
     color: '#000000'
 });
 
-var textColorpicker = tui.component.colorpicker.create({
+var textColorpicker = tui.colorPicker.create({
     container: $('#tui-text-color-picker')[0],
     color: '#000000'
 });
 
-var brushColorpicker = tui.component.colorpicker.create({
+var brushColorpicker = tui.colorPicker.create({
     container: $('#tui-brush-color-picker')[0],
     color: '#000000'
 });
 
-var shapeColorpicker = tui.component.colorpicker.create({
+var shapeColorpicker = tui.colorPicker.create({
     container: $('#tui-shape-color-picker')[0],
     color: '#000000'
 });
@@ -272,7 +272,7 @@ $btnShowMenu.on('click', function() {
     imageEditor.stopDrawingMode();
 });
 
-//Image load action
+// Image load action
 $inputImage.on('change', function(event) {
     var file;
     var img;
@@ -291,7 +291,7 @@ $inputImage.on('change', function(event) {
             resolution = this.width * this.height;
 
             if (resolution <= MAX_RESOLUTION) {
-                imageEditor.loadImageFromFile(file).then(() => {
+                imageEditor.loadImageFromFile(file).then(function() {
                     imageEditor.clearUndoStack();
                 });
             } else {
@@ -352,7 +352,7 @@ $btnCrop.on('click', function() {
 });
 
 $btnApplyCrop.on('click', function() {
-    imageEditor.crop(imageEditor.getCropzoneRect()).then(() => {
+    imageEditor.crop(imageEditor.getCropzoneRect()).then(function() {
         imageEditor.stopDrawingMode();
         $subMenus.removeClass('show');
         $hiddenMenus.removeClass('show');
@@ -418,7 +418,7 @@ $btnChangeTextStyle.on('click', function() {
             styleObjKey = 'fontStyle';
             break;
         case 'underline':
-            styleObjKey = 'textDecoration';
+            styleObjKey = 'underline';
             break;
         case 'left':
             styleObjKey = 'textAlign';
@@ -565,6 +565,6 @@ shapeColorpicker.on('selectColor', function(event) {
 });
 
 // Load sample image
-imageEditor.loadImageFromURL('img/sampleImage.jpg', 'SampleImage').then(() => {
+imageEditor.loadImageFromURL('img/sampleImage.jpg', 'SampleImage').then(function() {
     imageEditor.clearUndoStack();
 });

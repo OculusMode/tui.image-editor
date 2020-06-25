@@ -1,25 +1,25 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Test cases of "src/js/component/filter.js"
  */
-import $ from 'jquery';
 import ImageEditor from '../src/js/imageEditor';
 
 describe('Filter', () => {
     let imageEditor;
     const imageURL = 'base/test/fixtures/sampleImage.jpg';
 
-    beforeAll(done => {
-        imageEditor = new ImageEditor($('<div></div>'), {
+    beforeEach(done => {
+        imageEditor = new ImageEditor(document.createElement('div'), {
             cssMaxWidth: 700,
             cssMaxHeight: 500
         });
         imageEditor.loadImageFromURL(imageURL, 'sampleImage').then(() => {
+            imageEditor.clearUndoStack();
             done();
         });
     });
 
-    afterAll(() => {
+    afterEach(() => {
         imageEditor.destroy();
     });
 
@@ -33,14 +33,27 @@ describe('Filter', () => {
         });
     });
 
+    it('applyFilter() can not add undo stack at isSilent', done => {
+        const isSilent = true;
+
+        imageEditor.applyFilter('colorFilter', {}, isSilent).then(() => {
+            expect(imageEditor.isEmptyUndoStack()).toBe(true);
+            done();
+        })['catch'](() => {
+            fail();
+            done();
+        });
+    });
+
     it('hasFilter', () => {
+        imageEditor.applyFilter('colorFilter');
+
         expect(imageEditor.hasFilter('invert')).toBe(false);
         expect(imageEditor.hasFilter('colorFilter')).toBe(true);
     });
 
     it('removeFilter() can remove added filter', done => {
-        imageEditor.applyFilter('colorFilter').then(() =>
-            imageEditor.removeFilter('colorFilter')
+        imageEditor.applyFilter('colorFilter').then(() => imageEditor.removeFilter('colorFilter')
         ).then(() => {
             expect(imageEditor.hasFilter('colorFilter')).toBe(false);
             expect(imageEditor.isEmptyUndoStack()).toBe(false);

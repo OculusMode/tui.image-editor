@@ -1,10 +1,9 @@
 /**
  * basic.js
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview
  */
-'use strict';
-
+/* eslint-disable vars-on-top,no-var,strict,prefer-template,prefer-arrow-callback,prefer-destructuring,object-shorthand,require-jsdoc,complexity,prefer-const,no-unused-vars */
 var supportingFileAPI = !!(window.File && window.FileList && window.FileReader);
 var rImageType = /data:(image\/.+);base64,/;
 var shapeOptions = {};
@@ -63,8 +62,6 @@ var $inputCheckBrightness = $('#input-check-brightness');
 var $inputRangeBrightnessValue = $('#input-range-brightness-value');
 var $inputCheckNoise = $('#input-check-noise');
 var $inputRangeNoiseValue = $('#input-range-noise-value');
-var $inputCheckGradientTransparency = $('#input-check-gradient-transparancy');
-var $inputRangeGradientTransparencyValue = $('#input-range-gradient-transparency-value');
 var $inputCheckPixelate = $('#input-check-pixelate');
 var $inputRangePixelateValue = $('#input-range-pixelate-value');
 var $inputCheckTint = $('#input-check-tint');
@@ -96,7 +93,7 @@ var $selectShapeType = $('[name="select-shape-type"]');
 // Select color of shape type
 var $selectColorType = $('[name="select-color-type"]');
 
-//Select blend type
+// Select blend type
 var $selectBlendType = $('[name="select-blend-type"]');
 
 // Image editor
@@ -110,40 +107,40 @@ var imageEditor = new tui.ImageEditor('.tui-image-editor', {
 });
 
 // Color picker for free drawing
-var brushColorpicker = tui.component.colorpicker.create({
+var brushColorpicker = tui.colorPicker.create({
     container: $('#tui-brush-color-picker')[0],
     color: '#000000'
 });
 
 // Color picker for text palette
-var textColorpicker = tui.component.colorpicker.create({
+var textColorpicker = tui.colorPicker.create({
     container: $('#tui-text-color-picker')[0],
     color: '#000000'
 });
 
 // Color picker for shape
-var shapeColorpicker = tui.component.colorpicker.create({
+var shapeColorpicker = tui.colorPicker.create({
     container: $('#tui-shape-color-picker')[0],
     color: '#000000'
 });
 
 // Color picker for icon
-var iconColorpicker = tui.component.colorpicker.create({
+var iconColorpicker = tui.colorPicker.create({
     container: $('#tui-icon-color-picker')[0],
     color: '#000000'
 });
 
-var tintColorpicker = tui.component.colorpicker.create({
+var tintColorpicker = tui.colorPicker.create({
     container: $('#tui-tint-color-picker')[0],
     color: '#000000'
 });
 
-var multiplyColorpicker = tui.component.colorpicker.create({
+var multiplyColorpicker = tui.colorPicker.create({
     container: $('#tui-multiply-color-picker')[0],
     color: '#000000'
 });
 
-var blendColorpicker = tui.component.colorpicker.create({
+var blendColorpicker = tui.colorPicker.create({
     container: $('#tui-blend-color-picker')[0],
     color: '#00FF00'
 });
@@ -156,7 +153,7 @@ function hexToRGBa(hex, alpha) {
     var b = parseInt(hex.slice(5, 7), 16);
     var a = alpha || 1;
 
-    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')';
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 }
 
 function base64ToBlob(data) {
@@ -189,7 +186,7 @@ function resizeEditor() {
 }
 
 function getBrushSettings() {
-    var brushWidth = $inputBrushWidthRange.val();
+    var brushWidth = parseInt($inputBrushWidthRange.val(), 10);
     var brushColor = brushColorpicker.getColor();
 
     return {
@@ -277,7 +274,7 @@ function showSubMenu(type) {
 
 function applyOrRemoveFilter(applying, type, options) {
     if (applying) {
-        imageEditor.applyFilter(type, options).then(result => {
+        imageEditor.applyFilter(type, options).then(function(result) {
             console.log(result);
         });
     } else {
@@ -314,7 +311,7 @@ imageEditor.on({
     addText: function(pos) {
         imageEditor.addText('Double Click', {
             position: pos.originPosition
-        }).then(objectProps => {
+        }).then(function(objectProps) {
             console.log(objectProps);
         });
     },
@@ -403,7 +400,7 @@ $btnClose.on('click', function() {
 });
 
 $btnApplyCrop.on('click', function() {
-    imageEditor.crop(imageEditor.getCropzoneRect()).then(() => {
+    imageEditor.crop(imageEditor.getCropzoneRect()).then(function() {
         imageEditor.stopDrawingMode();
         resizeEditor();
     });
@@ -414,7 +411,7 @@ $btnCancelCrop.on('click', function() {
 });
 
 $btnFlipX.on('click', function() {
-    imageEditor.flipX().then(status => {
+    imageEditor.flipX().then(function(status) {
         console.log('flipX: ', status.flipX);
         console.log('flipY: ', status.flipY);
         console.log('angle: ', status.angle);
@@ -422,7 +419,7 @@ $btnFlipX.on('click', function() {
 });
 
 $btnFlipY.on('click', function() {
-    imageEditor.flipY().then(status => {
+    imageEditor.flipY().then(function(status) {
         console.log('flipX: ', status.flipX);
         console.log('flipY: ', status.flipY);
         console.log('angle: ', status.angle);
@@ -430,7 +427,7 @@ $btnFlipY.on('click', function() {
 });
 
 $btnResetFlip.on('click', function() {
-    imageEditor.resetFlip().then(status => {
+    imageEditor.resetFlip().then(function(status) {
         console.log('flipX: ', status.flipX);
         console.log('flipY: ', status.flipY);
         console.log('angle: ', status.angle);
@@ -447,7 +444,7 @@ $btnRotateCounterClockWise.on('click', function() {
 
 $inputRotationRange.on('mousedown', function() {
     var changeAngle = function() {
-        imageEditor.setAngle(parseInt($inputRotationRange.val(), 10)).catch(() => {});
+        imageEditor.setAngle(parseInt($inputRotationRange.val(), 10))['catch'](function() {});
     };
     $(document).on('mousemove', changeAngle);
     $(document).on('mouseup', function stopChangingAngle() {
@@ -457,7 +454,7 @@ $inputRotationRange.on('mousedown', function() {
 });
 
 $inputRotationRange.on('change', function() {
-    imageEditor.setAngle(parseInt($inputRotationRange.val(), 10)).catch(() => {});
+    imageEditor.setAngle(parseInt($inputRotationRange.val(), 10))['catch'](function() {});
 });
 
 $inputBrushWidthRange.on('change', function() {
@@ -472,7 +469,7 @@ $inputImage.on('change', function(event) {
     }
 
     file = event.target.files[0];
-    imageEditor.loadImageFromFile(file).then(result => {
+    imageEditor.loadImageFromFile(file).then(function(result) {
         console.log(result);
         imageEditor.clearUndoStack();
     });
@@ -495,7 +492,7 @@ $btnDownload.on('click', function() {
     } else {
         alert('This browser needs a file-server');
         w = window.open();
-        w.document.body.innerHTML = '<img src=' + dataURL + '>';
+        w.document.body.innerHTML = '<img src="' + dataURL + '">';
     }
 });
 
@@ -632,7 +629,7 @@ $btnTextStyle.on('click', function(e) { // eslint-disable-line
             styleObj = {fontStyle: 'italic'};
             break;
         case 'u':
-            styleObj = {textDecoration: 'underline'};
+            styleObj = {underline: true};
             break;
         case 'l':
             styleObj = {textAlign: 'left'};
@@ -670,7 +667,7 @@ function onClickIconSubMenu(event) {
         imageEditor.addIcon(iconType, {
             left: originPointer.x,
             top: originPointer.y
-        }).then(objectProps => {
+        }).then(function(objectProps) {
             // console.log(objectProps);
         });
     });
@@ -716,7 +713,6 @@ $btnImageFilter.on('click', function() {
         'removeWhite': $inputCheckRemoveWhite,
         'brightness': $inputCheckBrightness,
         'noise': $inputCheckNoise,
-        'gradientTransparency': $inputCheckGradientTransparency,
         'pixelate': $inputCheckPixelate,
         'tint': $inputCheckTint,
         'multiply': $inputCheckMultiply,
@@ -745,8 +741,8 @@ $btnLoadMaskImage.on('change', function() {
     if (file) {
         imgUrl = URL.createObjectURL(file);
 
-        imageEditor.loadImageFromURL(imageEditor.toDataURL(), 'FilterImage').then(() => {
-            imageEditor.addImageObject(imgUrl).then(objectProps => {
+        imageEditor.loadImageFromURL(imageEditor.toDataURL(), 'FilterImage').then(function() {
+            imageEditor.addImageObject(imgUrl).then(function(objectProps) {
                 URL.revokeObjectURL(file);
                 console.log(objectProps);
             });
@@ -757,7 +753,7 @@ $btnLoadMaskImage.on('change', function() {
 $btnApplyMask.on('click', function() {
     imageEditor.applyFilter('mask', {
         maskObjId: activeObjectId
-    }).then(result => {
+    }).then(function(result) {
         console.log(result);
     });
 });
@@ -833,18 +829,6 @@ $inputRangeNoiseValue.on('change', function() {
     });
 });
 
-$inputCheckGradientTransparency.on('change', function() {
-    applyOrRemoveFilter(this.checked, 'gradientTransparency', {
-        threshold: parseInt($inputRangeGradientTransparencyValue.val(), 10)
-    });
-});
-
-$inputRangeGradientTransparencyValue.on('change', function() {
-    applyOrRemoveFilter($inputCheckGradientTransparency.is(':checked'), 'gradientTransparency', {
-        threshold: parseInt(this.value, 10)
-    });
-});
-
 $inputCheckPixelate.on('change', function() {
     applyOrRemoveFilter(this.checked, 'pixelate', {
         blocksize: parseInt($inputRangePixelateValue.val(), 10)
@@ -882,7 +866,7 @@ $inputCheckMultiply.on('change', function() {
     });
 });
 
-multiplyColorpicker.on('selectColor', function(e) {
+multiplyColorpicker.on('selectColor', function() {
     applyOrRemoveFilter($inputCheckMultiply.is(':checked'), 'multiply', {
         color: e.color
     });
@@ -923,7 +907,7 @@ $inputRangeColorFilterValue.on('change', function() {
 // Etc..
 
 // Load sample image
-imageEditor.loadImageFromURL('img/sampleImage.jpg', 'SampleImage').then(sizeValue => {
+imageEditor.loadImageFromURL('img/sampleImage.jpg', 'SampleImage').then(function(sizeValue) {
     console.log(sizeValue);
     imageEditor.clearUndoStack();
 });

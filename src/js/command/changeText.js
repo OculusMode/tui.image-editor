@@ -1,12 +1,11 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Change a text
  */
 import commandFactory from '../factory/command';
-import Promise from 'core-js/library/es6/promise';
-import consts from '../consts';
+import {Promise} from '../util';
+import {componentNames, rejectMessages, commandNames} from '../consts';
 
-const {componentNames, rejectMessages, commandNames} = consts;
 const {TEXT} = componentNames;
 
 const command = {
@@ -46,4 +45,4 @@ const command = {
 
 commandFactory.register(command);
 
-module.exports = command;
+export default command;

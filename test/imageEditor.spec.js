@@ -1,11 +1,14 @@
 /**
  * @fileoverview Test env
- * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Lab <dl_javascript@nhn.com>
  */
 
 import snippet from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
 import ImageEditor from '../src/js/imageEditor';
+import fabric from 'fabric';
+import {eventNames, keyCodes} from '../src/js/consts';
+
+const {OBJECT_ROTATED} = eventNames;
 
 describe('ImageEditor', () => {
     // hostnameSent module scope variable can not be reset.
@@ -15,7 +18,7 @@ describe('ImageEditor', () => {
 
         beforeEach(() => {
             el = document.createElement('div');
-            spyOn(snippet, 'imagePing');
+            spyOn(snippet, 'sendHostname');
 
             imageEditor = new ImageEditor(el, {
                 usageStatistics: false
@@ -29,7 +32,7 @@ describe('ImageEditor', () => {
         xit('should send hostname by default', () => {
             imageEditor = new ImageEditor(el);
 
-            expect(snippet.imagePing).toHaveBeenCalled();
+            expect(snippet.sendHostname).toHaveBeenCalled();
         });
 
         xit('should not send hostname on usageStatistics option false', () => {
@@ -37,51 +40,33 @@ describe('ImageEditor', () => {
                 usageStatistics: false
             });
 
-            expect(snippet.imagePing).not.toHaveBeenCalled();
+            expect(snippet.sendHostname).not.toHaveBeenCalled();
         });
 
-        it('removeObjectStream () must be executed as many times as the length of the Object array.', done => {
-            const promise = new Promise(resolve => {
-                resolve();
+        it('`preventDefault` of BACKSPACE key events should not be executed when object is selected state.', () => {
+            const spyCallback = jasmine.createSpy();
+
+            spyOn(imageEditor._graphics, 'getActiveObject').and.returnValue(null);
+
+            imageEditor._onKeyDown({
+                keyCode: keyCodes.BACKSPACE,
+                preventDefault: spyCallback
             });
 
-            spyOn(imageEditor, '_removeObjectStream').and.callThrough();
-            spyOn(imageEditor, 'removeObject').and.returnValue(promise);
-
-            const removeJobsSequens = [1, 2, 3, 4];
-            const expected = removeJobsSequens.length + 1;
-            const removeObjectStremPromise = imageEditor._removeObjectStream(removeJobsSequens);
-
-            removeObjectStremPromise.then(() => {
-                expect(imageEditor._removeObjectStream.calls.count()).toBe(expected);
-                done();
-            });
+            expect(spyCallback).not.toHaveBeenCalled();
         });
 
-        describe('removeActiveObject()', () => {
-            it('_removeObjectStream should be executed when group exists.', () => {
-                spyOn(imageEditor._graphics, 'getActiveObject');
-                spyOn(imageEditor._graphics, 'getActiveGroupObject').and.returnValue({
-                    getObjects: () => [1, 2, 3]
-                });
-                spyOn(imageEditor, '_removeObjectStream');
-                spyOn(imageEditor, 'discardSelection');
+        it('"objectRotated" event should be fire at object is rotate.', () => {
+            const canvas = imageEditor._graphics.getCanvas();
+            const obj = new fabric.Object({});
+            const mock = {target: obj};
+            canvas.add(obj);
 
-                imageEditor.removeActiveObject();
+            spyOn(imageEditor, 'fire').and.callThrough();
 
-                expect(imageEditor.discardSelection).toHaveBeenCalled();
-                expect(imageEditor._removeObjectStream).toHaveBeenCalled();
-            });
+            canvas.fire('object:rotating', mock);
 
-            it('removeObject must be executed when group does not exist.', () => {
-                spyOn(imageEditor._graphics, 'getActiveGroupObject').and.returnValue(null);
-                spyOn(imageEditor._graphics, 'getActiveObject').and.returnValue(jasmine.any(Object));
-                spyOn(imageEditor._graphics, 'getObjectId');
-                spyOn(imageEditor, 'removeObject');
-
-                imageEditor.removeActiveObject();
-                expect(imageEditor.removeObject).toHaveBeenCalled();
-            });
+            expect(imageEditor.fire.calls.mostRecent().args[0]).toBe(OBJECT_ROTATED);
         });
     });
 });

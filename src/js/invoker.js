@@ -1,13 +1,12 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Invoker - invoke commands
  */
 import snippet from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
+import {Promise} from './util';
 import commandFactory from './factory/command';
-import consts from './consts';
+import {eventNames, rejectMessages} from './consts';
 
-const {eventNames, rejectMessages} = consts;
 const {isFunction, isString, CustomEvents} = snippet;
 
 /**
@@ -37,6 +36,8 @@ class Invoker {
          * @private
          */
         this._isLocked = false;
+
+        this._isSilent = false;
     }
 
     /**
@@ -55,7 +56,9 @@ class Invoker {
 
         return command.execute(...args)
             .then(value => {
-                this.pushUndoStack(command);
+                if (!this._isSilent) {
+                    this.pushUndoStack(command);
+                }
                 this.unlock();
                 if (isFunction(command.executeCallback)) {
                     command.executeCallback(value);
@@ -127,6 +130,14 @@ class Invoker {
      */
     unlock() {
         this._isLocked = false;
+    }
+
+    executeSilent(...args) {
+        this._isSilent = true;
+
+        return this.execute(...args, this._isSilent).then(() => {
+            this._isSilent = false;
+        });
     }
 
     /**
@@ -275,4 +286,5 @@ class Invoker {
 }
 
 CustomEvents.mixin(Invoker);
-module.exports = Invoker;
+
+export default Invoker;

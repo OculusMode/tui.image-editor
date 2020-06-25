@@ -1,12 +1,9 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview CropperDrawingMode class
  */
 import DrawingMode from '../interface/drawingMode';
-import consts from '../consts';
-
-const {drawingModes} = consts;
-const components = consts.componentNames;
+import {drawingModes, componentNames as components} from '../consts';
 
 /**
  * CropperDrawingMode class
@@ -39,4 +36,4 @@ class CropperDrawingMode extends DrawingMode {
     }
 }
 
-module.exports = CropperDrawingMode;
+export default CropperDrawingMode;

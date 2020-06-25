@@ -1,32 +1,34 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Shape component
  */
-import fabric from 'fabric/dist/fabric.require';
-import Promise from 'core-js/library/es6/promise';
+import fabric from 'fabric';
 import Component from '../interface/component';
-import consts from '../consts';
+import {
+    rejectMessages,
+    eventNames,
+    keyCodes as KEY_CODES,
+    componentNames,
+    fObjectOptions,
+    SHAPE_DEFAULT_OPTIONS
+} from '../consts';
 import resizeHelper from '../helper/shapeResizeHelper';
+import {Promise} from '../util';
 import {extend, inArray} from 'tui-code-snippet';
 
-const {rejectMessages, eventNames} = consts;
-const KEY_CODES = consts.keyCodes;
-
-const DEFAULT_TYPE = 'rect';
-const DEFAULT_OPTIONS = {
+const SHAPE_INIT_OPTIONS = extend({
     strokeWidth: 1,
     stroke: '#000000',
     fill: '#ffffff',
     width: 1,
     height: 1,
     rx: 0,
-    ry: 0,
-    lockSkewingX: true,
-    lockSkewingY: true,
-    lockUniScaling: false,
-    bringForward: true,
-    isRegular: false
-};
+    ry: 0
+}, SHAPE_DEFAULT_OPTIONS);
+
+const DEFAULT_TYPE = 'rect';
+const DEFAULT_WIDTH = 20;
+const DEFAULT_HEIGHT = 20;
 
 const shapeType = ['rect', 'circle', 'triangle'];
 
@@ -37,9 +39,9 @@ const shapeType = ['rect', 'circle', 'triangle'];
  * @extends {Component}
  * @ignore
  */
-class Shape extends Component {
+export default class Shape extends Component {
     constructor(graphics) {
-        super(consts.componentNames.SHAPE, graphics);
+        super(componentNames.SHAPE, graphics);
 
         /**
          * Object of The drawing shape
@@ -60,7 +62,7 @@ class Shape extends Component {
          * @type {Object}
          * @private
          */
-        this._options = extend({}, DEFAULT_OPTIONS);
+        this._options = extend({}, SHAPE_INIT_OPTIONS);
 
         /**
          * Whether the shape object is selected or not
@@ -177,13 +179,17 @@ class Shape extends Component {
     add(type, options) {
         return new Promise(resolve => {
             const canvas = this.getCanvas();
-            options = this._createOptions(options);
+            options = this._extendOptions(options);
+
             const shapeObj = this._createInstance(type, options);
 
             this._bindEventOnShape(shapeObj);
 
             canvas.add(shapeObj).setActiveObject(shapeObj);
-            resolve(this.graphics.createObjectProperties(shapeObj));
+
+            const objectProperties = this.graphics.createObjectProperties(shapeObj);
+
+            resolve(objectProperties);
         });
     }
 
@@ -249,10 +255,10 @@ class Shape extends Component {
      * @returns {Object} Shape options
      * @private
      */
-    _createOptions(options) {
-        const selectionStyles = consts.fObjectOptions.SELECTION_STYLE;
+    _extendOptions(options) {
+        const selectionStyles = fObjectOptions.SELECTION_STYLE;
 
-        options = extend({}, DEFAULT_OPTIONS, this._options, selectionStyles, options);
+        options = extend({}, SHAPE_INIT_OPTIONS, this._options, selectionStyles, options);
 
         if (options.isRegular) {
             options.lockUniScaling = true;
@@ -353,6 +359,7 @@ class Shape extends Component {
             this._shapeObj.set({
                 isRegular: this._withShiftKey
             });
+
             resizeHelper.resize(shape, pointer);
             canvas.renderAll();
         }
@@ -364,13 +371,23 @@ class Shape extends Component {
      */
     _onFabricMouseUp() {
         const canvas = this.getCanvas();
+        const startPointX = this._startPoint.x;
+        const startPointY = this._startPoint.y;
         const shape = this._shapeObj;
 
-        if (shape) {
+        if (!shape) {
+            this.add(this._type, {
+                left: startPointX,
+                top: startPointY,
+                width: DEFAULT_WIDTH,
+                height: DEFAULT_HEIGHT
+            }).then(objectProps => {
+                this.fire(eventNames.ADD_OBJECT, objectProps);
+            });
+        } else if (shape) {
             resizeHelper.adjustOriginToCenter(shape);
+            this.fire(eventNames.ADD_OBJECT_AFTER, this.graphics.createObjectProperties(shape));
         }
-
-        this.fire(eventNames.ADD_OBJECT_AFTER, this.graphics.createObjectProperties(shape));
 
         canvas.off({
             'mouse:move': this._handlers.mousemove,
@@ -408,5 +425,3 @@ class Shape extends Component {
         }
     }
 }
-
-module.exports = Shape;

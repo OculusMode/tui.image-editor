@@ -1,37 +1,114 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Image-editor application class
  */
 import snippet from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
 import Invoker from './invoker';
 import UI from './ui';
 import action from './action';
 import commandFactory from './factory/command';
 import Graphics from './graphics';
-import consts from './consts';
-import { sendHostName } from './util';
+import {sendHostName, Promise} from './util';
+import {eventNames as events, commandNames as commands, keyCodes, rejectMessages} from './consts';
 
-const events = consts.eventNames;
-const commands = consts.commandNames;
-const { keyCodes, rejectMessages } = consts;
-const { isUndefined, forEach, CustomEvents } = snippet;
+const {isUndefined, forEach, CustomEvents} = snippet;
+
+const {
+    MOUSE_DOWN,
+    OBJECT_MOVED,
+    OBJECT_SCALED,
+    OBJECT_ACTIVATED,
+    OBJECT_ROTATED,
+    ADD_TEXT,
+    ADD_OBJECT,
+    TEXT_EDITING,
+    TEXT_CHANGED,
+    ICON_CREATE_RESIZE,
+    ICON_CREATE_END,
+    SELECTION_CLEARED,
+    SELECTION_CREATED,
+    ADD_OBJECT_AFTER} = events;
+
+/**
+ * Image filter result
+ * @typedef {object} FilterResult
+ * @property {string} type - filter type like 'mask', 'Grayscale' and so on
+ * @property {string} action - action type like 'add', 'remove'
+ */
+
+/**
+ * Flip status
+ * @typedef {object} FlipStatus
+ * @property {boolean} flipX - x axis
+ * @property {boolean} flipY - y axis
+ * @property {Number} angle - angle
+ */
+/**
+ * Rotation status
+ * @typedef {Number} RotateStatus
+ * @property {Number} angle - angle
+ */
+
+/**
+ * Old and new Size
+ * @typedef {object} SizeChange
+ * @property {Number} oldWidth - old width
+ * @property {Number} oldHeight - old height
+ * @property {Number} newWidth - new width
+ * @property {Number} newHeight - new height
+ */
+
+/**
+ * @typedef {string} ErrorMsg - {string} error message
+ */
+
+/**
+ * @typedef {object} ObjectProps - graphics object properties
+ * @property {number} id - object id
+ * @property {string} type - object type
+ * @property {string} text - text content
+ * @property {(string | number)} left - Left
+ * @property {(string | number)} top - Top
+ * @property {(string | number)} width - Width
+ * @property {(string | number)} height - Height
+ * @property {string} fill - Color
+ * @property {string} stroke - Stroke
+ * @property {(string | number)} strokeWidth - StrokeWidth
+ * @property {string} fontFamily - Font type for text
+ * @property {number} fontSize - Font Size
+ * @property {string} fontStyle - Type of inclination (normal / italic)
+ * @property {string} fontWeight - Type of thicker or thinner looking (normal / bold)
+ * @property {string} textAlign - Type of text align (left / center / right)
+ * @property {string} textDecoration - Type of line (underline / line-through / overline)
+ */
 
 /**
  * Image editor
  * @class
- * @param {string|jQuery|HTMLElement} wrapper - Wrapper's element or selector
+ * @param {string|HTMLElement} wrapper - Wrapper's element or selector
  * @param {Object} [options] - Canvas max width & height of css
  *  @param {number} [options.includeUI] - Use the provided UI
  *    @param {Object} [options.includeUI.loadImage] - Basic editing image
  *      @param {string} options.includeUI.loadImage.path - image path
  *      @param {string} options.includeUI.loadImage.name - image name
  *    @param {Object} [options.includeUI.theme] - Theme object
- *    @param {Array} [options.includeUI.menu] - It can be selected when only specific menu is used. [default all]
+ *    @param {Array} [options.includeUI.menu] - It can be selected when only specific menu is used, Default values are \['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'\].
  *    @param {string} [options.includeUI.initMenu] - The first menu to be selected and started.
- *    @param {string} [options.includeUI.menuBarPosition=bottom] - Menu bar position [top | bottom | left | right]
+ *    @param {Object} [options.includeUI.uiSize] - ui size of editor
+ *      @param {string} options.includeUI.uiSize.width - width of ui
+ *      @param {string} options.includeUI.uiSize.height - height of ui
+ *    @param {string} [options.includeUI.menuBarPosition=bottom] - Menu bar position('top', 'bottom', 'left', 'right')
  *  @param {number} options.cssMaxWidth - Canvas css-max-width
  *  @param {number} options.cssMaxHeight - Canvas css-max-height
+ *  @param {Object} [options.selectionStyle] - selection style
+ *  @param {string} [options.selectionStyle.cornerStyle] - selection corner style
+ *  @param {number} [options.selectionStyle.cornerSize] - selection corner size
+ *  @param {string} [options.selectionStyle.cornerColor] - selection corner color
+ *  @param {string} [options.selectionStyle.cornerStrokeColor] = selection corner stroke color
+ *  @param {boolean} [options.selectionStyle.transparentCorners] - selection corner transparent
+ *  @param {number} [options.selectionStyle.lineWidth] - selection line width
+ *  @param {string} [options.selectionStyle.borderColor] - selection border color
+ *  @param {number} [options.selectionStyle.rotatingPointOffset] - selection rotating point length
  *  @param {Boolean} [options.usageStatistics=true] - Let us know the hostname. If you don't want to send the hostname, please set to false.
  * @example
  * var ImageEditor = require('tui-image-editor');
@@ -45,6 +122,10 @@ const { isUndefined, forEach, CustomEvents } = snippet;
  *     theme: blackTheme, // or whiteTheme
  *     menu: ['shape', 'filter'],
  *     initMenu: 'filter',
+ *     uiSize: {
+ *         width: '1000px',
+ *         height: '700px'
+ *     },
  *     menuBarPosition: 'bottom'
  *   },
  *   cssMaxWidth: 700,
@@ -71,7 +152,10 @@ class ImageEditor {
          * @type {Ui}
          */
         if (options.includeUI) {
-            this.ui = new UI(wrapper, options.includeUI, this.getActions());
+            const UIOption = options.includeUI;
+            UIOption.usageStatistics = options.usageStatistics;
+
+            this.ui = new UI(wrapper, UIOption, this.getActions());
             options = this.ui.setUiDefaultSelectionStyle(options);
         }
 
@@ -89,11 +173,10 @@ class ImageEditor {
          */
         this._graphics = new Graphics(
             this.ui ? this.ui.getEditorArea() : wrapper, {
-            cssMaxWidth: options.cssMaxWidth,
-            cssMaxHeight: options.cssMaxHeight,
-            useItext: !!this.ui,
-            useDragAddIcon: !!this.ui
-        }
+                cssMaxWidth: options.cssMaxWidth,
+                cssMaxHeight: options.cssMaxHeight,
+                useDragAddIcon: !!this.ui
+            }
         );
 
         /**
@@ -107,6 +190,7 @@ class ImageEditor {
             objectActivated: this._onObjectActivated.bind(this),
             objectMoved: this._onObjectMoved.bind(this),
             objectScaled: this._onObjectScaled.bind(this),
+            objectRotated: this._onObjectRotated.bind(this),
             createdPath: this._onCreatedPath,
             addText: this._onAddText.bind(this),
             addObject: this._onAddObject.bind(this),
@@ -135,60 +219,8 @@ class ImageEditor {
             this.ui.initCanvas();
             this.setReAction();
         }
+        fabric.enableGLFiltering = false;
     }
-
-    /**
-     * Image filter result
-     * @typedef {Object} FilterResult
-     * @property {string} type - filter type like 'mask', 'Grayscale' and so on
-     * @property {string} action - action type like 'add', 'remove'
-     */
-
-    /**
-     * Flip status
-     * @typedef {Object} FlipStatus
-     * @property {boolean} flipX - x axis
-     * @property {boolean} flipY - y axis
-     * @property {Number} angle - angle
-     */
-    /**
-     * Rotation status
-     * @typedef {Number} RotateStatus
-     * @property {Number} angle - angle
-     */
-
-    /**
-     * Old and new Size
-     * @typedef {Object} SizeChange
-     * @property {Number} oldWidth - old width
-     * @property {Number} oldHeight - old height
-     * @property {Number} newWidth - new width
-     * @property {Number} newHeight - new height
-     */
-
-    /**
-     * @typedef {string} ErrorMsg - {string} error message
-     */
-
-    /**
-     * @typedef {Object} ObjectProps - graphics object properties
-     * @property {number} id - object id
-     * @property {string} type - object type
-     * @property {string} text - text content
-     * @property {string} left - Left
-     * @property {string} top - Top
-     * @property {string} width - Width
-     * @property {string} height - Height
-     * @property {string} fill - Color
-     * @property {string} stroke - Stroke
-     * @property {string} strokeWidth - StrokeWidth
-     * @property {string} fontFamily - Font type for text
-     * @property {number} fontSize - Font Size
-     * @property {string} fontStyle - Type of inclination (normal / italic)
-     * @property {string} fontWeight - Type of thicker or thinner looking (normal / bold)
-     * @property {string} textAlign - Type of text align (left / center / right)
-     * @property {string} textDecoraiton - Type of line (underline / line-throgh / overline)
-     */
 
     /**
      * Set selection style by init option
@@ -209,7 +241,7 @@ class ImageEditor {
 
         if (applyGroupSelectionStyle) {
             this.on('selectionCreated', eventTarget => {
-                if (eventTarget.type === 'group') {
+                if (eventTarget.type === 'activeSelection') {
                     eventTarget.set(selectionStyle);
                 }
             });
@@ -254,19 +286,20 @@ class ImageEditor {
      */
     _attachGraphicsEvents() {
         this._graphics.on({
-            'mousedown': this._handlers.mousedown,
-            'objectMoved': this._handlers.objectMoved,
-            'objectScaled': this._handlers.objectScaled,
-            'objectActivated': this._handlers.objectActivated,
-            'addText': this._handlers.addText,
-            'addObject': this._handlers.addObject,
-            'textEditing': this._handlers.textEditing,
-            'textChanged': this._handlers.textChanged,
-            'iconCreateResize': this._handlers.iconCreateResize,
-            'iconCreateEnd': this._handlers.iconCreateEnd,
-            'selectionCleared': this._handlers.selectionCleared,
-            'selectionCreated': this._handlers.selectionCreated,
-            'addObjectAfter': this._handlers.addObjectAfter
+            [MOUSE_DOWN]: this._handlers.mousedown,
+            [OBJECT_MOVED]: this._handlers.objectMoved,
+            [OBJECT_SCALED]: this._handlers.objectScaled,
+            [OBJECT_ROTATED]: this._handlers.objectRotated,
+            [OBJECT_ACTIVATED]: this._handlers.objectActivated,
+            [ADD_TEXT]: this._handlers.addText,
+            [ADD_OBJECT]: this._handlers.addObject,
+            [TEXT_EDITING]: this._handlers.textEditing,
+            [TEXT_CHANGED]: this._handlers.textChanged,
+            [ICON_CREATE_RESIZE]: this._handlers.iconCreateResize,
+            [ICON_CREATE_END]: this._handlers.iconCreateEnd,
+            [SELECTION_CLEARED]: this._handlers.selectionCleared,
+            [SELECTION_CREATED]: this._handlers.selectionCreated,
+            [ADD_OBJECT_AFTER]: this._handlers.addObjectAfter
         });
     }
 
@@ -295,56 +328,42 @@ class ImageEditor {
      */
     /* eslint-disable complexity */
     _onKeyDown(e) {
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === keyCodes.Z) {
-            // There is no error message on shortcut when it's empty
-            this.undo()['catch'](() => { });
+        const {ctrlKey, keyCode, metaKey} = e;
+        const isModifierKey = (ctrlKey || metaKey);
+
+        if (isModifierKey) {
+            if (keyCode === keyCodes.C) {
+                this._graphics.resetTargetObjectForCopyPaste();
+            } else if (keyCode === keyCodes.V) {
+                this._graphics.pasteObject();
+                this.clearRedoStack();
+            } else if (keyCode === keyCodes.Z) {
+                // There is no error message on shortcut when it's empty
+                this.undo()['catch'](() => {
+                });
+            } else if (keyCode === keyCodes.Y) {
+                // There is no error message on shortcut when it's empty
+                this.redo()['catch'](() => {
+                });
+            }
         }
 
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === keyCodes.Y) {
-            // There is no error message on shortcut when it's empty
-            this.redo()['catch'](() => {});
-        }
+        const isDeleteKey = keyCode === keyCodes.BACKSPACE || keyCode === keyCodes.DEL;
+        const isRemoveReady = this._graphics.isReadyRemoveObject();
 
-        if ((e.keyCode === keyCodes.BACKSPACE || e.keyCode === keyCodes.DEL)) {
+        if (isRemoveReady && isDeleteKey) {
             e.preventDefault();
             this.removeActiveObject();
         }
     }
-    /* eslint-enable complexity */
 
     /**
      * Remove Active Object
      */
     removeActiveObject() {
-        const activeObject = this._graphics.getActiveObject();
-        const activeObjectGroup = this._graphics.getActiveGroupObject();
+        const activeObjectId = this._graphics.getActiveObjectIdForRemove();
 
-        if (activeObjectGroup) {
-            const objects = activeObjectGroup.getObjects();
-            this.discardSelection();
-            this._removeObjectStream(objects);
-        } else if (activeObject) {
-            const activeObjectId = this._graphics.getObjectId(activeObject);
-            this.removeObject(activeObjectId);
-        }
-    }
-
-    /**
-     * RemoveObject Sequential processing for prevent invoke lock
-     * @param {Array.<Object>} targetObjects - target Objects for remove
-     * @returns {object} targetObjects
-     * @private
-     */
-    _removeObjectStream(targetObjects) {
-        if (!targetObjects.length) {
-            return true;
-        }
-
-        const targetObject = targetObjects.pop();
-
-        return this.removeObject(this._graphics.getObjectId(targetObject)).then(() => (
-            this._removeObjectStream(targetObjects)
-        ));
+        this.removeObject(activeObjectId);
     }
 
     /**
@@ -447,6 +466,25 @@ class ImageEditor {
     }
 
     /**
+     * 'objectRotated' event handler
+     * @param {ObjectProps} props - object properties
+     * @private
+     */
+    _onObjectRotated(props) {
+        /**
+         * The event when object angle is changed
+         * @event ImageEditor#objectRotated
+         * @param {ObjectProps} props - object properties
+         * @example
+         * imageEditor.on('objectRotated', function(props) {
+         *     console.log(props);
+         *     console.log(props.type);
+         * });
+         */
+        this.fire(events.OBJECT_ROTATED, props);
+    }
+
+    /**
      * Get current drawing mode
      * @returns {string}
      * @example
@@ -527,6 +565,20 @@ class ImageEditor {
         const theArgs = [this._graphics].concat(args);
 
         return this._invoker.execute(commandName, ...theArgs);
+    }
+
+    /**
+     * Invoke command
+     * @param {String} commandName - Command name
+     * @param {...*} args - Arguments for creating command
+     * @returns {Promise}
+     * @private
+     */
+    executeSilent(commandName, ...args) {
+        // Inject an Graphics instance as first parameter
+        const theArgs = [this._graphics].concat(args);
+
+        return this._invoker.executeSilent(commandName, ...theArgs);
     }
 
     /**
@@ -666,6 +718,14 @@ class ImageEditor {
     }
 
     /**
+     * Set the cropping rect
+     * @param {number} [mode] crop rect mode [1, 1.5, 1.3333333333333333, 1.25, 1.7777777777777777]
+     */
+    setCropzoneRect(mode) {
+        this._graphics.setCropzoneRect(mode);
+    }
+
+    /**
      * Flip
      * @returns {Promise}
      * @param {string} type - 'flipX' or 'flipY' or 'reset'
@@ -727,22 +787,31 @@ class ImageEditor {
     /**
      * @param {string} type - 'rotate' or 'setAngle'
      * @param {number} angle - angle value (degree)
+     * @param {boolean} isSilent - is silent execution or not
      * @returns {Promise<RotateStatus, ErrorMsg>}
      * @private
      */
-    _rotate(type, angle) {
-        return this.execute(commands.ROTATE_IMAGE, type, angle);
+    _rotate(type, angle, isSilent) {
+        let result = null;
+        if (isSilent) {
+            result = this.executeSilent(commands.ROTATE_IMAGE, type, angle);
+        } else {
+            result = this.execute(commands.ROTATE_IMAGE, type, angle);
+        }
+
+        return result;
     }
 
     /**
      * Rotate image
      * @returns {Promise}
      * @param {number} angle - Additional angle to rotate image
+     * @param {boolean} isSilent - is silent execution or not
      * @returns {Promise<RotateStatus, ErrorMsg>}
      * @example
-     * imageEditor.setAngle(10); // angle = 10
+     * imageEditor.rotate(10); // angle = 10
      * imageEditor.rotate(10); // angle = 20
-     * imageEidtor.setAngle(5); // angle = 5
+     * imageEidtor.rotate(5); // angle = 5
      * imageEidtor.rotate(-95); // angle = -90
      * imageEditor.rotate(10).then(status => {
      *     console.log('angle: ', status.angle);
@@ -750,13 +819,14 @@ class ImageEditor {
      *     console.log('error: ', message);
      * });
      */
-    rotate(angle) {
-        return this._rotate('rotate', angle);
+    rotate(angle, isSilent) {
+        return this._rotate('rotate', angle, isSilent);
     }
 
     /**
      * Set angle
      * @param {number} angle - Angle of image
+     * @param {boolean} isSilent - is silent execution or not
      * @returns {Promise<RotateStatus, ErrorMsg>}
      * @example
      * imageEditor.setAngle(10); // angle = 10
@@ -770,8 +840,8 @@ class ImageEditor {
      *     console.log('error: ', message);
      * });
      */
-    setAngle(angle) {
-        return this._rotate('setAngle', angle);
+    setAngle(angle, isSilent) {
+        return this._rotate('setAngle', angle, isSilent);
     }
 
     /**
@@ -850,7 +920,7 @@ class ImageEditor {
      *      @param {number} [options.ry] - Radius y value (When type option is 'circle', this options can use)
      *      @param {number} [options.left] - Shape x position
      *      @param {number} [options.top] - Shape y position
-     *      @param {number} [options.isRegular] - Whether resizing shape has 1:1 ratio or not
+     *      @param {boolean} [options.isRegular] - Whether resizing shape has 1:1 ratio or not
      * @returns {Promise<ObjectProps, ErrorMsg>}
      * @example
      * imageEditor.addShape('rect', {
@@ -894,7 +964,8 @@ class ImageEditor {
      *      @param {number} [options.height] - Height value (When type option is 'rect', this options can use)
      *      @param {number} [options.rx] - Radius x value (When type option is 'circle', this options can use)
      *      @param {number} [options.ry] - Radius y value (When type option is 'circle', this options can use)
-     *      @param {number} [options.isRegular] - Whether resizing shape has 1:1 ratio or not
+     *      @param {boolean} [options.isRegular] - Whether resizing shape has 1:1 ratio or not
+     * @param {boolean} isSilent - is silent execution or not
      * @returns {Promise}
      * @example
      * // call after selecting shape object on canvas
@@ -915,8 +986,10 @@ class ImageEditor {
      *     ry: 100
      * });
      */
-    changeShape(id, options) {
-        return this.execute(commands.CHANGE_SHAPE, id, options);
+    changeShape(id, options, isSilent) {
+        const executeMethodName = isSilent ? 'executeSilent' : 'execute';
+
+        return this[executeMethodName](commands.CHANGE_SHAPE, id, options);
     }
 
     /**
@@ -930,7 +1003,7 @@ class ImageEditor {
      *         @param {string} [options.styles.fontStyle] Type of inclination (normal / italic)
      *         @param {string} [options.styles.fontWeight] Type of thicker or thinner looking (normal / bold)
      *         @param {string} [options.styles.textAlign] Type of text align (left / center / right)
-     *         @param {string} [options.styles.textDecoraiton] Type of line (underline / line-throgh / overline)
+     *         @param {string} [options.styles.textDecoration] Type of line (underline / line-through / overline)
      *     @param {{x: number, y: number}} [options.position] - Initial position
      * @returns {Promise}
      * @example
@@ -939,7 +1012,7 @@ class ImageEditor {
      * imageEditor.addText('init text', {
      *     styles: {
      *         fill: '#000',
-     *         fontSize: '20',
+     *         fontSize: 20,
      *         fontWeight: 'bold'
      *     },
      *     position: {
@@ -981,15 +1054,18 @@ class ImageEditor {
      *     @param {string} [styleObj.fontStyle] Type of inclination (normal / italic)
      *     @param {string} [styleObj.fontWeight] Type of thicker or thinner looking (normal / bold)
      *     @param {string} [styleObj.textAlign] Type of text align (left / center / right)
-     *     @param {string} [styleObj.textDecoraiton] Type of line (underline / line-throgh / overline)
+     *     @param {string} [styleObj.textDecoration] Type of line (underline / line-through / overline)
+     * @param {boolean} isSilent - is silent execution or not
      * @returns {Promise}
      * @example
      * imageEditor.changeTextStyle(id, {
      *     fontStyle: 'italic'
      * });
      */
-    changeTextStyle(id, styleObj) {
-        return this.execute(commands.CHANGE_TEXT_STYLE, id, styleObj);
+    changeTextStyle(id, styleObj, isSilent) {
+        const executeMethodName = isSilent ? 'executeSilent' : 'execute';
+
+        return this[executeMethodName](commands.CHANGE_TEXT_STYLE, id, styleObj);
     }
 
     /**
@@ -1068,9 +1144,6 @@ class ImageEditor {
          *      @param {Number} pos.clientPosition.y - y
          * @example
          * imageEditor.on('addText', function(pos) {
-         *     imageEditor.addText('Double Click', {
-         *         position: pos.originPosition
-         *     });
          *     console.log('text position on canvas: ' + pos.originPosition);
          *     console.log('text position on brwoser: ' + pos.clientPosition);
          * });
@@ -1145,8 +1218,8 @@ class ImageEditor {
      * @param {string} type - Icon type ('arrow', 'cancel', custom icon name)
      * @param {Object} options - Icon options
      *      @param {string} [options.fill] - Icon foreground color
-     *      @param {string} [options.left] - Icon x position
-     *      @param {string} [options.top] - Icon y position
+     *      @param {number} [options.left] - Icon x position
+     *      @param {number} [options.top] - Icon y position
      * @returns {Promise<ObjectProps, ErrorMsg>}
      * @example
      * imageEditor.addIcon('arrow'); // The position is center on canvas
@@ -1219,6 +1292,7 @@ class ImageEditor {
      * @param {string} type - Filter type
      * @param {Object} options - Options to apply filter
      *  @param {number} options.maskObjId - masking image object id
+     * @param {boolean} isSilent - is silent execution or not
      * @returns {Promise<FilterResult, ErrorMsg>}
      * @example
      * imageEditor.applyFilter('Grayscale');
@@ -1230,13 +1304,22 @@ class ImageEditor {
      *     console.log('error: ', message);
      * });;
      */
-    applyFilter(type, options) {
-        return this.execute(commands.APPLY_FILTER, type, options);
+    applyFilter(type, options, isSilent) {
+        const executeMethodName = isSilent ? 'executeSilent' : 'execute';
+
+        return this[executeMethodName](commands.APPLY_FILTER, type, options);
     }
 
     /**
      * Get data url
-     * @param {string} type - A DOMString indicating the image format. The default type is image/png.
+     * @param {Object} options - options for toDataURL
+     *   @param {String} [options.format=png] The format of the output image. Either "jpeg" or "png"
+     *   @param {Number} [options.quality=1] Quality level (0..1). Only used for jpeg.
+     *   @param {Number} [options.multiplier=1] Multiplier to scale by
+     *   @param {Number} [options.left] Cropping left offset. Introduced in fabric v1.2.14
+     *   @param {Number} [options.top] Cropping top offset. Introduced in fabric v1.2.14
+     *   @param {Number} [options.width] Cropping width. Introduced in fabric v1.2.14
+     *   @param {Number} [options.height] Cropping height. Introduced in fabric v1.2.14
      * @returns {string} A DOMString containing the requested data URI
      * @example
      * imgEl.src = imageEditor.toDataURL();
@@ -1245,8 +1328,8 @@ class ImageEditor {
      *      imageEditor.addImageObject(imgUrl);
      * });
      */
-    toDataURL(type) {
-        return this._graphics.toDataURL(type);
+    toDataURL(options) {
+        return this._graphics.toDataURL(options);
     }
 
     /**
@@ -1316,6 +1399,10 @@ class ImageEditor {
         this._detachDomEvents();
         this._graphics.destroy();
         this._graphics = null;
+
+        if (this.ui) {
+            this.ui.destroy();
+        }
 
         forEach(this, (value, key) => {
             this[key] = null;
@@ -1483,4 +1570,4 @@ class ImageEditor {
 action.mixin(ImageEditor);
 CustomEvents.mixin(ImageEditor);
 
-module.exports = ImageEditor;
+export default ImageEditor;

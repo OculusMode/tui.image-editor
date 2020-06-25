@@ -1,15 +1,12 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Text module
  */
-import fabric from 'fabric/dist/fabric.require';
+import fabric from 'fabric';
 import snippet from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
 import Component from '../interface/component';
-import consts from '../consts';
-import util from '../util';
-
-const events = consts.eventNames;
+import {eventNames as events, componentNames, fObjectOptions} from '../consts';
+import {Promise} from '../util';
 
 const defaultStyles = {
     fill: '#000000',
@@ -21,26 +18,9 @@ const resetStyles = {
     fontStyle: 'normal',
     fontWeight: 'normal',
     textAlign: 'left',
-    textDecoraiton: ''
+    underline: false
 };
-const {browser} = snippet;
 
-const TEXTAREA_CLASSNAME = 'tui-image-eidtor-textarea';
-const TEXTAREA_STYLES = util.makeStyleText({
-    position: 'absolute',
-    padding: 0,
-    display: 'none',
-    border: '1px dotted red',
-    overflow: 'hidden',
-    resize: 'none',
-    outline: 'none',
-    'border-radius': 0,
-    'background-color': 'transparent',
-    '-webkit-appearance': 'none',
-    'z-index': 9999,
-    'white-space': 'pre'
-});
-const EXTRA_PIXEL_LINEHEIGHT = 0.1;
 const DBCLICK_TIME = 500;
 
 /**
@@ -52,7 +32,7 @@ const DBCLICK_TIME = 500;
  */
 class Text extends Component {
     constructor(graphics) {
-        super(consts.componentNames.TEXT, graphics);
+        super(componentNames.TEXT, graphics);
 
         /**
          * Default text style
@@ -118,12 +98,6 @@ class Text extends Component {
          * @type {boolean}
          */
         this.isPrevEditing = false;
-
-        /**
-         * use itext
-         * @type {boolean}
-         */
-        this.useItext = graphics.useItext;
     }
 
     /**
@@ -142,20 +116,11 @@ class Text extends Component {
             'text:editing': this._listeners.modify
         });
 
-        if (this.useItext) {
-            canvas.forEachObject(obj => {
-                if (obj.type === 'i-text') {
-                    obj.set({
-                        left: obj.left - (obj.width / 2),
-                        top: obj.top - (obj.height / 2),
-                        originX: 'left',
-                        originY: 'top'
-                    });
-                }
-            });
-        } else {
-            this._createTextarea();
-        }
+        canvas.forEachObject(obj => {
+            if (obj.type === 'i-text') {
+                this.adjustOriginPosition(obj, 'start');
+            }
+        });
 
         this.setCanvasRatio();
     }
@@ -169,25 +134,15 @@ class Text extends Component {
         canvas.selection = true;
         canvas.defaultCursor = 'default';
 
-        if (this.useItext) {
-            canvas.forEachObject(obj => {
-                if (obj.type === 'i-text') {
-                    if (obj.text === '') {
-                        obj.remove();
-                    } else {
-                        obj.set({
-                            left: obj.left + (obj.width / 2),
-                            top: obj.top + (obj.height / 2),
-                            originX: 'center',
-                            originY: 'center'
-                        });
-                    }
+        canvas.forEachObject(obj => {
+            if (obj.type === 'i-text') {
+                if (obj.text === '') {
+                    canvas.remove(obj);
+                } else {
+                    this.adjustOriginPosition(obj, 'end');
                 }
-            });
-        } else {
-            canvas.deactivateAllWithDispatch();
-            this._removeTextarea();
-        }
+            }
+        });
 
         canvas.off({
             'mouse:down': this._listeners.mousedown,
@@ -196,6 +151,27 @@ class Text extends Component {
             'object:scaling': this._listeners.scaling,
             'text:editing': this._listeners.modify
         });
+    }
+
+    /**
+     * Adjust the origin position
+     * @param {fabric.Object} text - text object
+     * @param {string} editStatus - 'start' or 'end'
+     */
+    adjustOriginPosition(text, editStatus) {
+        let [originX, originY] = ['center', 'center'];
+        if (editStatus === 'start') {
+            [originX, originY] = ['left', 'top'];
+        }
+
+        const {x: left, y: top} = text.getPointByOrigin(originX, originY);
+        text.set({
+            left,
+            top,
+            originX,
+            originY
+        });
+        text.setCoords();
     }
 
     /**
@@ -209,7 +185,7 @@ class Text extends Component {
      *         @param {string} [options.styles.fontStyle] Type of inclination (normal / italic)
      *         @param {string} [options.styles.fontWeight] Type of thicker or thinner looking (normal / bold)
      *         @param {string} [options.styles.textAlign] Type of text align (left / center / right)
-     *         @param {string} [options.styles.textDecoraiton] Type of line (underline / line-throgh / overline)
+     *         @param {string} [options.styles.textDecoration] Type of line (underline / line-through / overline)
      *     @param {{x: number, y: number}} [options.position] - Initial position
      * @returns {Promise}
      */
@@ -217,7 +193,7 @@ class Text extends Component {
         return new Promise(resolve => {
             const canvas = this.getCanvas();
             let newText = null;
-            let selectionStyle = consts.fObjectOptions.SELECTION_STYLE;
+            let selectionStyle = fObjectOptions.SELECTION_STYLE;
             let styles = this._defaultStyles;
 
             this._setInitPos(options.position);
@@ -226,15 +202,11 @@ class Text extends Component {
                 styles = snippet.extend(styles, options.styles);
             }
 
-            if (this.useItext) {
-                newText = new fabric.IText(text, styles);
-                selectionStyle = snippet.extend({}, selectionStyle, {
-                    originX: 'left',
-                    originY: 'top'
-                });
-            } else {
-                newText = new fabric.Text(text, styles);
-            }
+            newText = new fabric.IText(text, styles);
+            selectionStyle = snippet.extend({}, selectionStyle, {
+                originX: 'left',
+                originY: 'top'
+            });
 
             newText.set(selectionStyle);
             newText.on({
@@ -277,16 +249,20 @@ class Text extends Component {
      *     @param {string} [styleObj.fontStyle] Type of inclination (normal / italic)
      *     @param {string} [styleObj.fontWeight] Type of thicker or thinner looking (normal / bold)
      *     @param {string} [styleObj.textAlign] Type of text align (left / center / right)
-     *     @param {string} [styleObj.textDecoraiton] Type of line (underline / line-throgh / overline)
+     *     @param {string} [styleObj.textDecoration] Type of line (underline / line-through / overline)
      * @returns {Promise}
      */
     setStyle(activeObj, styleObj) {
         return new Promise(resolve => {
             snippet.forEach(styleObj, (val, key) => {
-                if (activeObj[key] === val) {
+                if (activeObj[key] === val && key !== 'fontSize') {
                     styleObj[key] = resetStyles[key] || '';
                 }
             }, this);
+
+            if ('textDecoration' in styleObj) {
+                snippet.extend(styleObj, this._getTextDecorationAdaptObject(styleObj.textDecoration));
+            }
 
             activeObj.set(styleObj);
 
@@ -301,7 +277,7 @@ class Text extends Component {
      * @returns {String} text
      */
     getText(activeObj) {
-        return activeObj.getText();
+        return activeObj.text;
     }
 
     /**
@@ -351,6 +327,19 @@ class Text extends Component {
     }
 
     /**
+     * Get text decoration adapt object
+     * @param {string} textDecoration - text decoration option string
+     * @returns {object} adapt object for override
+     */
+    _getTextDecorationAdaptObject(textDecoration) {
+        return {
+            underline: textDecoration === 'underline',
+            linetrought: textDecoration === 'line-through',
+            overline: textDecoration === 'overline'
+        };
+    }
+
+    /**
      * Set initial position on canvas image
      * @param {{x: number, y: number}} [position] - Selected position
      * @private
@@ -363,59 +352,6 @@ class Text extends Component {
     }
 
     /**
-     * Create textarea element on canvas container
-     * @private
-     */
-    _createTextarea() {
-        const container = this.getCanvasElement().parentNode;
-        const textarea = document.createElement('textarea');
-
-        textarea.className = TEXTAREA_CLASSNAME;
-        textarea.setAttribute('style', TEXTAREA_STYLES);
-        textarea.setAttribute('wrap', 'off');
-
-        container.appendChild(textarea);
-
-        this._textarea = textarea;
-
-        this._listeners = snippet.extend(this._listeners, {
-            input: this._onInput.bind(this),
-            keydown: this._onKeyDown.bind(this),
-            blur: this._onBlur.bind(this),
-            scroll: this._onScroll.bind(this)
-        });
-
-        if (browser.msie && browser.version === 9) {
-            fabric.util.addListener(textarea, 'keydown', this._listeners.keydown);
-        } else {
-            fabric.util.addListener(textarea, 'input', this._listeners.input);
-        }
-        fabric.util.addListener(textarea, 'blur', this._listeners.blur);
-        fabric.util.addListener(textarea, 'scroll', this._listeners.scroll);
-    }
-
-    /**
-     * Remove textarea element on canvas container
-     * @private
-     */
-    _removeTextarea() {
-        const container = this.getCanvasElement().parentNode;
-        const textarea = container.querySelector('textarea');
-
-        container.removeChild(textarea);
-
-        this._textarea = null;
-
-        if (browser.msie && browser.version < 10) {
-            fabric.util.removeListener(textarea, 'keydown', this._listeners.keydown);
-        } else {
-            fabric.util.removeListener(textarea, 'input', this._listeners.input);
-        }
-        fabric.util.removeListener(textarea, 'blur', this._listeners.blur);
-        fabric.util.removeListener(textarea, 'scroll', this._listeners.scroll);
-    }
-
-    /**
      * Input event handler
      * @private
      */
@@ -424,8 +360,8 @@ class Text extends Component {
         const obj = this._editingObj;
         const textareaStyle = this._textarea.style;
 
-        textareaStyle.width = `${Math.ceil(obj.getWidth() / ratio)}px`;
-        textareaStyle.height = `${Math.ceil(obj.getHeight() / ratio)}px`;
+        textareaStyle.width = `${Math.ceil(obj.width / ratio)}px`;
+        textareaStyle.height = `${Math.ceil(obj.height / ratio)}px`;
     }
 
     /**
@@ -438,10 +374,10 @@ class Text extends Component {
         const textareaStyle = this._textarea.style;
 
         setTimeout(() => {
-            obj.setText(this._textarea.value);
+            obj.text(this._textarea.value);
 
-            textareaStyle.width = `${Math.ceil(obj.getWidth() / ratio)}px`;
-            textareaStyle.height = `${Math.ceil(obj.getHeight() / ratio)}px`;
+            textareaStyle.width = `${Math.ceil(obj.width / ratio)}px`;
+            textareaStyle.height = `${Math.ceil(obj.height / ratio)}px`;
         }, 0);
     }
 
@@ -454,8 +390,8 @@ class Text extends Component {
         const editingObj = this._editingObj;
         const editingObjInfos = this._editingObjInfos;
         const textContent = this._textarea.value;
-        let transWidth = (editingObj.getWidth() / ratio) - (editingObjInfos.width / ratio);
-        let transHeight = (editingObj.getHeight() / ratio) - (editingObjInfos.height / ratio);
+        let transWidth = (editingObj.width / ratio) - (editingObjInfos.width / ratio);
+        let transHeight = (editingObj.height / ratio) - (editingObjInfos.height / ratio);
 
         if (ratio === 1) {
             transWidth /= 2;
@@ -498,11 +434,11 @@ class Text extends Component {
      */
     _onFabricScaling(fEvent) {
         const obj = fEvent.target;
-        const scalingSize = obj.getFontSize() * obj.getScaleY();
+        const scalingSize = obj.fontSize * obj.scaleY;
 
-        obj.setFontSize(scalingSize);
-        obj.setScaleX(1);
-        obj.setScaleY(1);
+        obj.fontSize = scalingSize;
+        obj.scaleX = 1;
+        obj.scaleY = 1;
     }
 
     /**
@@ -520,7 +456,7 @@ class Text extends Component {
         if (obj) {
             // obj is empty object at initial time, will be set fabric object
             if (obj.text === '') {
-                obj.remove();
+                this.getCanvas().remove(obj);
             }
         }
     }
@@ -587,12 +523,14 @@ class Text extends Component {
      * @private
      */
     _onFabricMouseUp(fEvent) {
+        const {target} = fEvent;
         const newClickTime = (new Date()).getTime();
 
-        if (this._isDoubleClick(newClickTime)) {
-            if (!this.useItext) {
-                this._changeToEditingMode(fEvent.target);
-            }
+        if (this._isDoubleClick(newClickTime) && !target.isEditing) {
+            target.enterEditing();
+        }
+
+        if (target.isEditing) {
             this.fire(events.TEXT_EDITING); // fire editing text event
         }
 
@@ -608,48 +546,6 @@ class Text extends Component {
     _isDoubleClick(newClickTime) {
         return (newClickTime - this._lastClickTime < DBCLICK_TIME);
     }
-
-    /**
-     * Change state of text object for editing
-     * @param {fabric.Text} obj - Text object fired event
-     * @private
-     */
-    _changeToEditingMode(obj) {
-        const ratio = this.getCanvasRatio();
-        const textareaStyle = this._textarea.style;
-
-        this.isPrevEditing = true;
-
-        obj.remove();
-
-        this._editingObj = obj;
-        this._textarea.value = obj.getText();
-
-        this._editingObjInfos = {
-            left: this._editingObj.getLeft(),
-            top: this._editingObj.getTop(),
-            width: this._editingObj.getWidth(),
-            height: this._editingObj.getHeight()
-        };
-
-        textareaStyle.display = 'block';
-        textareaStyle.left = `${obj.oCoords.tl.x / ratio}px`;
-        textareaStyle.top = `${obj.oCoords.tl.y / ratio}px`;
-        textareaStyle.width = `${Math.ceil(obj.getWidth() / ratio)}px`;
-        textareaStyle.height = `${Math.ceil(obj.getHeight() / ratio)}px`;
-        textareaStyle.transform = `rotate(${obj.getAngle()}deg)`;
-        textareaStyle.color = obj.getFill();
-
-        textareaStyle['font-size'] = `${obj.getFontSize() / ratio}px`;
-        textareaStyle['font-family'] = obj.getFontFamily();
-        textareaStyle['font-style'] = obj.getFontStyle();
-        textareaStyle['font-weight'] = obj.getFontWeight();
-        textareaStyle['text-align'] = obj.getTextAlign();
-        textareaStyle['line-height'] = obj.getLineHeight() + EXTRA_PIXEL_LINEHEIGHT;
-        textareaStyle['transform-origin'] = 'left top';
-
-        this._textarea.focus();
-    }
 }
 
-module.exports = Text;
+export default Text;

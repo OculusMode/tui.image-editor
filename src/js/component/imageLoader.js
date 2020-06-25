@@ -1,12 +1,11 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Image loader
  */
-import Promise from 'core-js/library/es6/promise';
 import Component from '../interface/component';
-import consts from '../consts';
+import {componentNames, rejectMessages} from '../consts';
+import {Promise} from '../util';
 
-const {componentNames, rejectMessages} = consts;
 const imageOption = {
     padding: 0,
     crossOrigin: 'Anonymous'
@@ -28,7 +27,7 @@ class ImageLoader extends Component {
      * Load image from url
      * @param {?string} imageName - File name
      * @param {?(fabric.Image|string)} img - fabric.Image instance or URL of an image
-     * @returns {jQuery.Deferred} deferred
+     * @returns {Promise}
      */
     load(imageName, img) {
         let promise;
@@ -58,7 +57,7 @@ class ImageLoader extends Component {
     /**
      * Set background image
      * @param {?(fabric.Image|String)} img fabric.Image instance or URL of an image to set background to
-     * @returns {$.Deferred} deferred
+     * @returns {Promise}
      * @private
      */
     _setBackgroundImage(img) {
@@ -72,7 +71,7 @@ class ImageLoader extends Component {
             canvas.setBackgroundImage(img, () => {
                 const oImage = canvas.backgroundImage;
 
-                if (oImage.getElement()) {
+                if (oImage && oImage.getElement()) {
                     resolve(oImage);
                 } else {
                     reject(rejectMessages.loadingImageFailed);
@@ -82,4 +81,4 @@ class ImageLoader extends Component {
     }
 }
 
-module.exports = ImageLoader;
+export default ImageLoader;

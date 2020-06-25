@@ -1,5 +1,5 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Command factory
  */
 import Command from '../interface/command';
@@ -34,7 +34,7 @@ function register(command) {
     commands[command.name] = command;
 }
 
-module.exports = {
+export default {
     create,
     register
 };

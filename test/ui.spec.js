@@ -1,10 +1,11 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Test cases of "src/js/ui.js"
  */
 import snippet from 'tui-code-snippet';
-import Promise from 'core-js/library/es6/promise';
+import {Promise} from '../src/js/util';
 import UI from '../src/js/ui';
+import {HELP_MENUS} from '../src/js/consts';
 
 describe('UI', () => {
     let ui;
@@ -12,7 +13,7 @@ describe('UI', () => {
     beforeEach(() => {
         uiOptions = {
             loadImage: {
-                path: '',
+                path: 'mockImagePath',
                 name: ''
             },
             menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
@@ -21,6 +22,34 @@ describe('UI', () => {
         };
         ui = new UI(document.createElement('div'), uiOptions, {});
     });
+
+    describe('Destroy()', () => {
+        it('"_destroyAllMenu()" The "destroy" function of all menu instances must be executed.', () => {
+            snippet.forEach(uiOptions.menu, menuName => {
+                spyOn(ui[menuName], 'destroy');
+            });
+
+            ui._destroyAllMenu();
+
+            snippet.forEach(uiOptions.menu, menuName => {
+                expect(ui[menuName].destroy).toHaveBeenCalled();
+            });
+        });
+
+        it('"_removeUiEvent()" must execute "removeEventListener" of all menus.', () => {
+            const allUiButtonElementName = [...uiOptions.menu, ...HELP_MENUS];
+            snippet.forEach(allUiButtonElementName, elementName => {
+                spyOn(ui._buttonElements[elementName], 'removeEventListener');
+            });
+
+            ui._removeUiEvent();
+
+            snippet.forEach(allUiButtonElementName, elementName => {
+                expect(ui._buttonElements[elementName].removeEventListener).toHaveBeenCalled();
+            });
+        });
+    });
+
     describe('_changeMenu()', () => {
         beforeEach(() => {
             ui.submenu = 'shape';
@@ -52,7 +81,7 @@ describe('UI', () => {
         it('Instance of the menu specified in the option must be created.', () => {
             spyOn(ui, '_makeMenuElement');
             const getConstructorName = constructor => (
-                constructor.toString().match(/^function\s(.+)\(/)[1]
+                constructor.toString().match(/^function\s(.+?)\(/)[1]
             );
 
             ui._makeSubMenu();
@@ -65,8 +94,10 @@ describe('UI', () => {
     });
 
     describe('initCanvas()', () => {
-        it('When initCanvas is executed, some internal methods must be run as required.', done => {
-            const promise = new Promise(resolve => {
+        let promise;
+
+        beforeEach(() => {
+            promise = new Promise(resolve => {
                 resolve();
             });
             ui._editorElement = {
@@ -75,63 +106,75 @@ describe('UI', () => {
             ui._actions.main = {
                 initLoadImage: jasmine.createSpy('initLoadImage').and.returnValue(promise)
             };
+        });
 
-            spyOn(ui, '_addDownloadEvent');
+        it('When initCanvas is executed, some internal methods must be run as required.', done => {
+            spyOn(ui, 'activeMenuEvent');
             spyOn(ui, '_addLoadEvent');
-            spyOn(ui, '_addMenuEvent');
-            spyOn(ui, '_addSubMenuEvent');
-            spyOn(ui, '_addHelpActionEvent');
-            spyOn(ui, '_initMenu');
 
             ui.initCanvas();
             promise.then(() => {
-                expect(ui._addDownloadEvent).toHaveBeenCalled();
+                expect(ui.activeMenuEvent).toHaveBeenCalled();
                 expect(ui._addLoadEvent).toHaveBeenCalled();
-                expect(ui._addMenuEvent).toHaveBeenCalled();
-                expect(ui._addSubMenuEvent).toHaveBeenCalled();
-                expect(ui._addHelpActionEvent).toHaveBeenCalled();
                 done();
             });
         });
+
+        it('`initLoadImage()` should not be run when has not image path.', () => {
+            spyOn(ui, '_getLoadImage').and.returnValue({path: ''});
+
+            ui.initCanvas();
+
+            expect(ui._actions.main.initLoadImage).not.toHaveBeenCalled();
+        });
+
+        it('`_AddLoadEvent()` should be executed even if there is no image path.', () => {
+            spyOn(ui, '_getLoadImage').and.returnValue({path: ''});
+            spyOn(ui, '_addLoadEvent');
+
+            ui.initCanvas();
+
+            expect(ui._addLoadEvent).toHaveBeenCalled();
+        });
     });
 
-    describe('_getEditorPosition()', () => {
+    describe('_setEditorPosition()', () => {
+        beforeEach(() => {
+            ui._editorElement = document.createElement('div');
+            spyOn(ui, '_getCanvasMaxDimension').and.returnValue({
+                width: 300,
+                height: 300
+            });
+        });
+
         it('Position is bottom, it should be reflected in the bottom of the editor position.', () => {
             ui.submenu = true;
-            expect(ui._getEditorPosition('bottom')).toEqual({
-                top: 0,
-                bottom: 150,
-                left: 0,
-                right: 0
-            });
+            ui._setEditorPosition('bottom');
+
+            expect(ui._editorElement.style.top).toBe('150px');
+            expect(ui._editorElement.style.left).toBe('0px');
         });
 
         it('Position is top, it should be reflected in the top of the editor position.', () => {
             ui.submenu = true;
-            expect(ui._getEditorPosition('top')).toEqual({
-                top: 150,
-                bottom: 0,
-                left: 0,
-                right: 0
-            });
+            ui._setEditorPosition('top');
+
+            expect(ui._editorElement.style.top).toBe('-150px');
+            expect(ui._editorElement.style.left).toBe('0px');
         });
         it('Position is left, it should be reflected in the left, right of the editor position.', () => {
             ui.submenu = true;
-            expect(ui._getEditorPosition('left')).toEqual({
-                top: 0,
-                bottom: 0,
-                left: 248,
-                right: 248
-            });
+            ui._setEditorPosition('left');
+
+            expect(ui._editorElement.style.top).toBe('0px');
+            expect(ui._editorElement.style.left).toBe('-150px');
         });
         it('Position is right, it should be reflected in the right of the editor position.', () => {
             ui.submenu = true;
-            expect(ui._getEditorPosition('right')).toEqual({
-                top: 0,
-                bottom: 0,
-                left: 0,
-                right: 248
-            });
+            ui._setEditorPosition('right');
+
+            expect(ui._editorElement.style.top).toBe('0px');
+            expect(ui._editorElement.style.left).toBe('150px');
         });
     });
 });

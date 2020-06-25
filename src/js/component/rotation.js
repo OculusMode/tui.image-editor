@@ -1,13 +1,11 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Image rotation module
  */
-import fabric from 'fabric/dist/fabric.require';
-import Promise from 'core-js/library/es6/promise';
+import fabric from 'fabric';
+import {Promise} from '../util';
 import Component from '../interface/component';
-import consts from '../consts';
-
-const {componentNames} = consts;
+import {componentNames} from '../consts';
 
 /**
  * Image Rotation component
@@ -37,7 +35,7 @@ class Rotation extends Component {
      *      See "http://fabricjs.com/docs/fabric.Object.html#setAngle"
      *
      * @param {number} angle - Angle value
-     * @returns {jQuery.Deferred}
+     * @returns {Promise}
      */
     setAngle(angle) {
         const oldAngle = this.getCurrentAngle() % 360; // The angle is lower than 2*PI(===360 degrees)
@@ -46,7 +44,7 @@ class Rotation extends Component {
 
         const canvasImage = this.getCanvasImage();
         const oldImageCenter = canvasImage.getCenterPoint();
-        canvasImage.setAngle(angle).setCoords();
+        canvasImage.set({angle}).setCoords();
         this.adjustCanvasDimension();
         const newImageCenter = canvasImage.getCenterPoint();
         this._rotateForEachObject(oldImageCenter, newImageCenter, angle - oldAngle);
@@ -86,7 +84,7 @@ class Rotation extends Component {
     /**
      * Rotate the image
      * @param {number} additionalAngle - Additional angle
-     * @returns {jQuery.Deferred}
+     * @returns {Promise}
      */
     rotate(additionalAngle) {
         const current = this.getCurrentAngle();
@@ -95,4 +93,4 @@ class Rotation extends Component {
     }
 }
 
-module.exports = Rotation;
+export default Rotation;

@@ -1,13 +1,11 @@
 /**
- * @author NHN Ent. FE Development Team <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Team <dl_javascript@nhn.com>
  * @fileoverview Set object properties
  */
 import snippet from 'tui-code-snippet';
 import commandFactory from '../factory/command';
-import Promise from 'core-js/library/es6/promise';
-import consts from '../consts';
-
-const {commandNames, rejectMessages} = consts;
+import {Promise} from '../util';
+import {commandNames, rejectMessages} from '../consts';
 
 const command = {
     name: commandNames.SET_OBJECT_PROPERTIES,
@@ -23,7 +21,7 @@ const command = {
      *     @param {string} [props.fontStyle] Type of inclination (normal / italic)
      *     @param {string} [props.fontWeight] Type of thicker or thinner looking (normal / bold)
      *     @param {string} [props.textAlign] Type of text align (left / center / right)
-     *     @param {string} [props.textDecoraiton] Type of line (underline / line-throgh / overline)
+     *     @param {string} [props.textDecoration] Type of line (underline / line-through / overline)
      * @returns {Promise}
      */
     execute(graphics, id, props) {
@@ -58,4 +56,4 @@ const command = {
 
 commandFactory.register(command);
 
-module.exports = command;
+export default command;

@@ -2,11 +2,16 @@
 > Full featured image editor using HTML5 Canvas. It's easy to use and provides powerful filters.
 
 
-[![github version](https://img.shields.io/github/release/nhnent/tui.image-editor.svg)](https://github.com/nhnent/tui.image-editor/releases/latest) [![npm version](https://img.shields.io/npm/v/tui-image-editor.svg)](https://www.npmjs.com/package/tui-image-editor) [![bower version](https://img.shields.io/bower/v/tui.image-editor.svg)](https://github.com/nhnent/tui.image-editor/releases/latest) [![license](https://img.shields.io/github/license/nhnent/tui.image-editor.svg)](https://github.com/nhnent/tui.image-editor/blob/master/LICENSE) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/nhnent/tui.image-editor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)[![code with hearth by NHN Entertainment](https://img.shields.io/badge/%3C%2F%3E%20with%20%E2%99%A5%20by-NHN%20Entertainment-ff1414.svg)](https://github.com/nhnent)
+[![github version](https://img.shields.io/github/release/nhn/tui.image-editor.svg)](https://github.com/nhn/tui.image-editor/releases/latest) [![npm version](https://img.shields.io/npm/v/tui-image-editor.svg)](https://www.npmjs.com/package/tui-image-editor) [![bower version](https://img.shields.io/bower/v/tui.image-editor.svg)](https://github.com/nhn/tui.image-editor/releases/latest) [![license](https://img.shields.io/github/license/nhn/tui.image-editor.svg)](https://github.com/nhn/tui.image-editor/blob/master/LICENSE) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/nhn/tui.image-editor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)[![code with hearth by NHN](https://img.shields.io/badge/%3C%2F%3E%20with%20%E2%99%A5%20by-NHN%20Entertainment-ff1414.svg)](https://github.com/nhn)
+
+## Wrappers
+- [toast-ui.vue-image-editor](https://github.com/nhn/toast-ui.vue-image-editor): Vue wrapper component is powered by [NHN](https://github.com/nhn).
+- [toast-ui.react-image-editor](https://github.com/nhn/toast-ui.react-image-editor): React wrapper component is powered by [NHN](https://github.com/nhn).
 
 ![6 -20-2018 17-45-54](https://user-images.githubusercontent.com/35218826/41647896-7b218ae0-74b2-11e8-90db-d7805cc23e8c.gif)
 
 ## 🚩 Table of Contents
+* [Collect statistics on the use of open source](#Collect-statistics-on-the-use-of-open-source)
 * [Browser Support](#-browser-support)
 * [Has full features that stick to the basic.](#-has-full-features-that-stick-to-the-basic)
     * [Photo manipulation](#photo-manipulation)
@@ -24,6 +29,8 @@
 * [Usage](#-usage)
   * [HTML](#html)
   * [JavaScript](#javascript)
+  * [Menu svg icon setting](#menu-svg-icon-setting)
+  * [TypeScript](#-typescript)
 * [Development](#-development)
   * [Setup](#setup)
   * [Run webpack-dev-server](#run-webpack-dev-server)
@@ -31,14 +38,34 @@
 * [Contributing](#-contributing)
 * [Dependency](#-dependency)
 * [TOAST UI Family](#-toast-ui-family)
+* [Used By](#-used-by)
 * [License](#-license)
 
+
+## Collect statistics on the use of open source
+
+TOAST UI ImageEditor applies Google Analytics (GA) to collect statistics on the use of open source, in order to identify how widely TOAST UI ImageEditor is used throughout the world. It also serves as important index to determine the future course of projects. location.hostname (e.g. > “ui.toast.com") is to be collected and the sole purpose is nothing but to measure statistics on the usage. To disable GA, use the following `usageStatistics` option when creating the instance.
+
+```js
+var options = {
+    //...
+    usageStatistics: false
+}
+
+var imageEditor = new tui.ImageEditor('#tui-image-editor-container', options);
+```
+
+Or, include [`tui-code-snippet`](https://github.com/nhn/tui.code-snippet)(**v1.4.0** or **later**) and then immediately write the options as follows:
+
+```js
+tui.usageStatistics = false;
+```
 
 
 ## 🌏 Browser Support
 | <img src="https://user-images.githubusercontent.com/1215767/34348387-a2e64588-ea4d-11e7-8267-a43365103afe.png" alt="Chrome" width="16px" height="16px" /> Chrome | <img src="https://user-images.githubusercontent.com/1215767/34348590-250b3ca2-ea4f-11e7-9efb-da953359321f.png" alt="IE" width="16px" height="16px" /> Internet Explorer | <img src="https://user-images.githubusercontent.com/1215767/34348380-93e77ae8-ea4d-11e7-8696-9a989ddbbbf5.png" alt="Edge" width="16px" height="16px" /> Edge | <img src="https://user-images.githubusercontent.com/1215767/34348394-a981f892-ea4d-11e7-9156-d128d58386b9.png" alt="Safari" width="16px" height="16px" /> Safari | <img src="https://user-images.githubusercontent.com/1215767/34348383-9e7ed492-ea4d-11e7-910c-03b39d52f496.png" alt="Firefox" width="16px" height="16px" /> Firefox |
 | :---------: | :---------: | :---------: | :---------: | :---------: |
-| Yes | 9+ | Yes | Yes | Yes |
+| Yes | 10+ | Yes | Yes | Yes |
 
 
 ## 💪 Has full features that stick to the basic.
@@ -81,11 +108,11 @@
 </table>
 
 ### Powerful filter function
-- Grayscale, Invert, Sepia, Blur Sharpen, Emboss, RemoveWhite, GradientTransparency, Brightness, Noise, Pixelate, ColorFilter, Tint, Multiply, Blend
+- Grayscale, Invert, Sepia, Blur Sharpen, Emboss, RemoveWhite, Brightness, Noise, Pixelate, ColorFilter, Tint, Multiply, Blend
 
-| Grayscale | Noise | Gradient | Emboss | Pixelate | 
-| --- | --- | --- | --- | --- | 
-| ![grayscale](https://user-images.githubusercontent.com/35218826/41753470-930fb7b0-7608-11e8-9966-1c890e73d131.png) | ![noise](https://user-images.githubusercontent.com/35218826/41753458-9013bc82-7608-11e8-91d9-74dcc3ffce31.png) | ![gradient-transparency](https://user-images.githubusercontent.com/35218826/41753459-903fe640-7608-11e8-87f4-cc0bff43b4ee.png) | ![emboss](https://user-images.githubusercontent.com/35218826/41753460-906c018a-7608-11e8-8861-c135c0117cea.png) | ![pixelate](https://user-images.githubusercontent.com/35218826/41753461-90a614a6-7608-11e8-97a7-0d3b7bb4aec4.png) |
+| Grayscale | Noise | Emboss | Pixelate | 
+| --- | --- | --- | --- | 
+| ![grayscale](https://user-images.githubusercontent.com/35218826/41753470-930fb7b0-7608-11e8-9966-1c890e73d131.png) | ![noise](https://user-images.githubusercontent.com/35218826/41753458-9013bc82-7608-11e8-91d9-74dcc3ffce31.png) | ![emboss](https://user-images.githubusercontent.com/35218826/41753460-906c018a-7608-11e8-8861-c135c0117cea.png) | ![pixelate](https://user-images.githubusercontent.com/35218826/41753461-90a614a6-7608-11e8-97a7-0d3b7bb4aec4.png) |
 
 
 | Sepia | Sepia2 | Blend-righten | Blend-diff | Invert | 
@@ -114,7 +141,7 @@ var imageEditor = new tui.ImageEditor('#tui-image-editor-container', {
 ## 🙆 Easy to apply the size and design you want
 
 ### Can be used everywhere.
-  - Widely supported in browsers including IE9, which is the minimum requirement to support canvas.
+  - Widely supported in browsers including IE10.
   - Option to support various display sizes.
     (allows you to use the editor features on your web pages at least over **550 * 450 sizes**)
     
@@ -160,10 +187,15 @@ When using npm, be sure [Node.js](https://nodejs.org) is installed in the enviro
 
 #### npm
 
+#### 1. ImageEditor installation
 ```sh
 $ npm install --save tui-image-editor # Latest version
 $ npm install --save tui-image-editor@<version> # Specific version
 ```
+
+##### 2. If the installation of the `fabric.js` dependency module does not go smoothly
+
+To solve the problem, you need to refer to [Some Steps](https://github.com/fabricjs/fabric.js#install-with-npm) to solve the problem.
 
 #### bower
 
@@ -197,8 +229,8 @@ tui-image-editor/
 ```
 
 ### Download Source Files
-* [Download bundle files from `dist` folder](https://github.com/nhnent/tui.image-editor/tree/production/dist)
-* [Download all sources for each version](https://github.com/nhnent/tui.image-editor/releases)
+* [Download bundle files from `dist` folder](https://github.com/nhn/tui.image-editor/tree/production/dist)
+* [Download all sources for each version](https://github.com/nhn/tui.image-editor/releases)
 
 
 
@@ -222,13 +254,20 @@ Add dependencies & initialize ImageEditor class with given element to make an im
 
 ```javascript
 var ImageEditor = require('tui-image-editor');
+var FileSaver = require('file-saver'); //to download edited image to local. Use after npm install file-saver
 var blackTheme = require('./js/theme/black-theme.js');
+var locale_ru_RU = { // override default English locale to your custom
+    'Crop': 'Обзрезать',
+    'Delete-all': 'Удалить всё'
+    // etc...
+};
 var instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
      includeUI: {
          loadImage: {
              path: 'img/sampleImage.jpg',
              name: 'SampleImage'
          },
+         locale: locale_ru_RU,
          theme: blackTheme, // or whiteTheme
          initMenu: 'filter',
          menuBarPosition: 'bottom'
@@ -256,7 +295,34 @@ var instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
 });
 ```
 
-See [details](https://nhnent.github.io/tui.image-editor/latest) for additional informations.
+### Menu svg icon setting
+
+#### There are two ways to set icons.
+
+1. **Use default svg built** into imageEditor without setting svg file path (Features added since version v3.9.0).
+2. There is a way to use the **actual physical svg file** and **set the file location manually**.
+
+Can find more details in [this document](https://github.com/nhn/tui.image-editor/blob/master/docs/Basic-Tutorial.md#4-menu-submenu-svg-icon-setting).
+
+### TypeScript
+If you using TypeScript, You must `import module = require('module')` on importing.
+[`export =` and `import = require()`](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
+
+```typescript
+import ImageEditor = require('tui-image-editor');
+var FileSaver = require('file-saver'); //to download edited image to local. Use after npm install file-saver
+
+const instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
+    cssMaxWidth: 700,
+    cssMaxHeight: 500,
+    selectionStyle: {
+        cornerSize: 20,
+        rotatingPointOffset: 70
+    }
+});
+```
+
+See [details](https://nhn.github.io/tui.image-editor/latest) for additional informations.
 
 ## 🔧 Development
 
@@ -285,28 +351,32 @@ $ npm run serve
 ```
 
 ## 📙 Documents
-* **Tutorial** : [https://github.com/nhnent/tui.image-editor/tree/master/docs](https://github.com/nhnent/tui.image-editor/tree/master/docs)
-* **Example** : [http://nhnent.github.io/tui.image-editor/latest/tutorial-example01-includeUi.html](http://nhnent.github.io/tui.image-editor/latest/tutorial-example01-includeUi.html)
-* **API** : [http://nhnent.github.io/tui.image-editor/latest/](http://nhnent.github.io/tui.image-editor/latest/)
+* **Tutorial** : [https://github.com/nhn/tui.image-editor/tree/master/docs](https://github.com/nhn/tui.image-editor/tree/master/docs)
+* **Example** : [http://nhn.github.io/tui.image-editor/latest/tutorial-example01-includeUi](http://nhn.github.io/tui.image-editor/latest/tutorial-example01-includeUi)
+* **API** : [http://nhn.github.io/tui.image-editor/latest](http://nhn.github.io/tui.image-editor/latest/index)
 
 ## 💬 Contributing
 * [Code of Conduct](CODE_OF_CONDUCT.md)
 * [Contributing guideline](CONTRIBUTING.md)
 * [Issue guideline](ISSUE_TEMPLATE.md)
-* [Commit convention](https://github.com/nhnent/tui.image-editor/blob/production/docs/COMMIT_MESSAGE_CONVENTION.md)
+* [Commit convention](https://github.com/nhn/tui.image-editor/blob/production/docs/COMMIT_MESSAGE_CONVENTION.md)
 
 ## 🔩 Dependency
-* [fabric.js](https://github.com/kangax/fabric.js/releases/tag/v1.6.7) >=1.6.7
-* [tui.code-snippet](https://github.com/nhnent/tui.code-snippet/releases/tag/v1.2.5) >=1.3.0
-* [tui.color-picker](https://github.com/nhnent/tui.color-picker/releases/tag/v2.2.0) >=2.2.0
+* [fabric.js](https://github.com/fabricjs/fabric.js/releases) =3.6.0
+* [tui.code-snippet](https://github.com/nhn/tui.code-snippet/releases/tag/v1.5.0) >=1.5.0
+* [tui.color-picker](https://github.com/nhn/tui.color-picker/releases/tag/v2.2.6) >=2.2.6
 
 
 ## 🍞 TOAST UI Family
-* [TOAST UI Editor](https://github.com/nhnent/tui.editor)
-* [TOAST UI Grid](https://github.com/nhnent/tui.grid)
-* [TOAST UI Chart](https://github.com/nhnent/tui.chart)
-* [TOAST UI Calendar](https://github.com/nhnent/tui.calendar)
-* [TOAST UI Components](https://github.com/nhnent)
+* [TOAST UI Editor](https://github.com/nhn/tui.editor)
+* [TOAST UI Grid](https://github.com/nhn/tui.grid)
+* [TOAST UI Chart](https://github.com/nhn/tui.chart)
+* [TOAST UI Calendar](https://github.com/nhn/tui.calendar)
+* [TOAST UI Components](https://github.com/nhn)
+
+## 🚀 Used By
+* [TOAST Dooray! - Collaboration Service (Project, Messenger, Mail, Calendar, Drive, Wiki, Contacts)](https://dooray.com/home/)
+* [Catalyst](https://catalystapp.co/)
 
 ## 📜 License
-[MIT LICENSE](https://github.com/nhnent/tui.image-editor/blob/master/LICENSE)
+[MIT LICENSE](https://github.com/nhn/tui.image-editor/blob/master/LICENSE)
